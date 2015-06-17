@@ -1,0 +1,5 @@
+&GROUP_NAME
+  filename = 'all.nc'
+  variable_name = 'temperature' 'humidity',
+  variable_mapping = 'temperature' 'humidity'
+/
