@@ -1,6 +1,6 @@
 module readncdf
 
- contains
+  contains
 
 subroutine readstepnc(fname,var_name,ff, fill_value, lon, lat)
   ! A condensed way to read a variable form  netcdf file

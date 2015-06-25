@@ -1,8 +1,8 @@
 module write_littler
 
-!implicit none
+implicit none
 
- contains
+  contains
 
 subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
   p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
@@ -14,11 +14,12 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
   ! in: - data variables &* strings to write in LITTLE_R format
   ! otu: - output file in LITTLE_R format
   !implicit none
+  integer :: kx, k, iunit
   real,dimension(kx),intent(in) :: p,z,t,td,spd,dir,u,v,rh,thick
-  real, intent(in) :: xlon, xlat
+  real, intent(in) :: xlon, xlat, slp, ter
   integer,dimension(kx),intent(in) :: p_qc,z_qc,t_qc,td_qc,spd_qc
   integer, dimension(kx), intent(in) :: dir_qc,u_qc,v_qc,rh_qc,thick_qc
-  
+  integer :: iseq_num
   character(len=14) :: timechar
   character *20 date_char
   character *40 string1, string2 , string3 , string4
