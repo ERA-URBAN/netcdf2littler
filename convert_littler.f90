@@ -21,6 +21,8 @@ program netcdftolittler
 
 !     ... bogus data are not subject to quality control
 
+! TODO: for surface data we need to write height to LITTLE_R file
+! otherwise, we need to write pressure to LITTLE_R file
 parameter (kx=1)
 
 logical bogus
@@ -90,6 +92,7 @@ interface
     string1 , string2 , string3 , string4 , bogus , iseq_num , &
     iunit )
     real,dimension(kx),intent(in) :: p,z,t,td,spd,dir,u,v,rh,thick
+    real, intent(in) :: xlon, xlat
     integer,dimension(kx),intent(in) :: p_qc,z_qc,t_qc,td_qc,spd_qc
     integer, dimension(kx), intent(in) :: dir_qc,u_qc,v_qc,rh_qc,thick_qc
     character(len=14) :: timechar
@@ -104,7 +107,7 @@ namelist /group_name/ filename, variable_name, variable_mapping
   open(10,file='./wageningen.namelist')
   read(10,group_name)
   close(10)
-  
+
 call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
   dspeed, ddirection, du, dv, drh, dthickness,dpressure_qc, &
   dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, &
@@ -137,13 +140,13 @@ call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
     end if
     if (ANY(variable_mapping=="height" ) .AND. &
       (height(idx) /= fill_value)) then
-      z = height(idx)
+      z = height(idx) ! either p or z must be defined
     else
       z = dheight
     endif
     if (ANY(variable_mapping=="temperature" ) .AND. &
       (temperature(idx) /= fill_value)) then
-      t = temperature(idx) + 273.15
+      t = temperature(idx) + 273.15 ! convert to K
     else
       t = dtemperature
     end if
@@ -223,13 +226,19 @@ call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
   stop 99999
 end
 
+
 subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
   p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
   slp , ter , xlat , xlon , timechar , kx , &
   string1 , string2 , string3 , string4 , bogus , iseq_num , &
   iunit )
   ! TODO: add fields in the header format as arguments
+  ! write observations in LITTLE_R format for WRF data assimilation
+  ! in: - data variables &* strings to write in LITTLE_R format
+  ! otu: - output file in LITTLE_R format
+  !implicit none
   real,dimension(kx),intent(in) :: p,z,t,td,spd,dir,u,v,rh,thick
+  real, intent(in) :: xlon, xlat
   integer,dimension(kx),intent(in) :: p_qc,z_qc,t_qc,td_qc,spd_qc
   integer, dimension(kx), intent(in) :: dir_qc,u_qc,v_qc,rh_qc,thick_qc
   
@@ -286,7 +295,8 @@ subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
   dv_qc, drh_qc, dthickness_qc, kx)
   ! set default values for LITTLE_R format
   ! -888888.:  measurement not available
-  ! _qc = 0: no quality control 
+  ! _qc = 0: no quality control
+  implicit none
   integer, intent(in) :: kx
   real, dimension(kx), intent(out) :: dpressure, dheight, dtemperature, ddew_point
   real, dimension(kx), intent(out) ::  dspeed, ddirection, du, dv, drh, dthickness
@@ -318,53 +328,43 @@ subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
   end do
 end subroutine get_default_littler
 
-subroutine check(status)
-  implicit none
-  integer, intent(in):: status
-  if(status /= 0) then
-    write (*,*) status
-  end if
-end subroutine check
-
 subroutine readstepnc(fname,var_name,ff, fill_value, lon, lat)
   ! A condensed way to read a variable form  netcdf file
   ! it is implied that the format is ff(time, device)
+  ! in:  - fname: netcdf filename
+  !      - var_name: name of variable to read
+  ! out: - ff: output array
+  !      - lon, lat: longitude and latitude of measurement
+  !      - fill_value: fill_value used in netcdf file
   use netcdf
   use f_udunits_2
+  use check_status
+  
   implicit none
+  
   ! declare calling variables
-  character(len=*),intent(in) :: fname
-  character(len=*),intent(in) :: var_name
+  character(len=*),intent(in) :: fname, var_name
   real,dimension(:),intent(out) :: ff
-  real, intent(out) :: fill_value
-  real,dimension(:),allocatable :: time
-  character(len=14),dimension(:),allocatable :: time_littler
+  real,intent(out) :: lon, lat, fill_value
   ! declare local variables
-  integer :: nc_id,var_id,ndim,nvar,nattr,unlim_id,fmt
+  integer :: nc_id,var_id,ndim,nvar,nattr,unlim_id,fmt, &
+             ii,status,lo,la,le,ld,ti, device, dlength, charset, &
+             hour,minute,year,month,day
   character(len=15) :: dname, varname
   character(len=100) :: timeunits
-  integer :: dlength
   real,dimension(:), allocatable:: var_dummy
-  integer :: ii,status,lo,la,le,ld,ti, device
   real :: sf,ofs
-  real,intent(out) :: lon, lat
-  integer hour,minute,year,month,day
   real(c_double) :: second, tt, resolution, converted_time
   type(cv_converter_ptr) :: time_cvt0, time_cvt
   type(ut_system_ptr) :: sys
   type(ut_unit_ptr) :: sec0, unit1, time_base0, time_base
-  integer :: charset
   real *8, parameter :: ZERO = 0.0
-  ! define interface
-  interface
-    subroutine check(status)
-      integer, intent(in):: status
-    end subroutine check
-  end interface
-
+  real,dimension(:),allocatable :: time
+  character(len=14),dimension(:),allocatable :: time_littler
+  
   call check(nf90_open(fname,nf90_nowrite,nc_id))
   call check(nf90_inquire(nc_id,ndim,nvar))
-  ! take the dimension names and lengths
+  ! take the dimension names and lengths 
   do ii=1,ndim
     call check(NF90_INQUIRE_DIMENSION(nc_id,ii,dname,len=dlength))
     select case (trim(dname))
@@ -413,25 +413,28 @@ subroutine readstepnc(fname,var_name,ff, fill_value, lon, lat)
   deallocate(var_dummy)
 end subroutine readstepnc
 
+
 subroutine readtimedim(fname, ti, time_littler)
+  ! read the time dimension of a netcdf file
+  ! in:     - fname: netcdf filename
+  ! out:    - ti : length of time axis
+  !         - time_littler: time in LITTLE_R format
   use netcdf
+  use check_status
   implicit none
   ! declare calling variables
   character(len=*),intent(in) :: fname
   integer, intent(out) :: ti
-  ! declare local variables
-  integer :: nc_id,ndim,nvar
-  character(len=15) :: dname, varname
-  integer :: dlength, var_id
-  integer :: ii,lo,la,le,ld, device
-  character(len=100) :: timeunits
-  real,dimension(:),allocatable :: time
   character(len=14),dimension(:), intent(out), allocatable :: time_littler
+  ! declare local variables
+  integer :: nc_id,ndim,nvar, dlength, var_id, &
+             ii,lo,la,le,ld, device
+  character(len=15) :: dname, varname
+  character(len=100) :: timeunits
+  ! allocatable variables
+  real,dimension(:),allocatable :: time
   ! define interface
   interface
-    subroutine check(status)
-      integer, intent(in):: status
-    end subroutine check
     subroutine time_to_littler_date(time, timeunits, time_littler)
       real,dimension(:),intent(in)    :: time
       character(len=100), intent(in) :: timeunits
@@ -476,6 +479,10 @@ end subroutine readtimedim
 
 
 subroutine time_to_littler_date(time, timeunits, time_littler)
+  ! convert time to LITTLE_R time format
+  ! in:   - time: time array
+  !       - timeunits: units of time of time array
+  ! out:  - time_littler: time in LITTLE_R format
   use f_udunits_2
   implicit none
   real(c_double) :: tt
