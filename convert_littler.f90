@@ -23,6 +23,9 @@ program netcdftolittler
 
 ! TODO: for surface data we need to write height to LITTLE_R file
 ! otherwise, we need to write pressure to LITTLE_R file
+
+use readncdf
+
 parameter (kx=1)
 
 logical bogus
@@ -51,6 +54,9 @@ REAL,DIMENSION(:), ALLOCATABLE :: pressure, direction, thickness
 REAL,DIMENSION(:), ALLOCATABLE :: uwind, vwind
       
 character(len=14), dimension(:), allocatable :: time_littler
+real,dimension(:), allocatable    :: time
+character(len=100) :: timeunits
+
 INTEGER:: pp
 REAL :: lon, lat
 
@@ -61,19 +67,6 @@ real :: fill_value
       
 ! define interface
 interface
-  subroutine readstepnc(fname,var_name,ff,fill_value,lon, lat)
-    ! declare calling variables
-    CHARACTER(LEN=*),INTENT(in)        :: fname
-    CHARACTER(LEN=*),INTENT(in)        :: var_name
-    REAL,DIMENSION(:),INTENT(out)    :: ff
-    real, intent(out) :: fill_value
-    REAL, INTENT(out)           :: lon, lat
-  end subroutine readstepnc
-  subroutine readtimedim(fname, timeLength, time_littler)
-    CHARACTER(LEN=*),INTENT(in)        :: fname
-    INTEGER, INTENT(out) :: timeLength
-    character(len=14),dimension(:),intent(out),allocatable :: time_littler
-  end subroutine readtimedim
   subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
     dspeed, ddirection, du, dv, drh, dthickness,dpressure_qc, dheight_qc, dtemperature_qc, &
     ddew_point_qc, dspeed_qc, ddirection_qc, du_qc, &
@@ -100,6 +93,11 @@ interface
     character *40 string1, string2 , string3 , string4
     logical :: bogus
   end subroutine write_obs
+  subroutine time_to_littler_date(time, timeunits, time_littler)
+    real,dimension(:),intent(in)    :: time
+    character(len=100), intent(in) :: timeunits
+    character(len=14), dimension(:), intent(out) :: time_littler
+  end subroutine time_to_littler_date  
 end interface
 
 ! get filename, variable_names and variable_mappings from namelist
@@ -113,7 +111,11 @@ call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
   dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, &
   ddirection_qc, du_qc, dv_qc, drh_qc, dthickness_qc, kx)
   ! get length of time axis and time axis
-  CALL readtimedim(filename, timeLength, time_littler)
+  call readtimedim(filename, time, timeunits)
+  timeLength = size(time)
+  allocate(time_littler(timeLength))
+  call time_to_littler_date(time, timeunits, time_littler)
+  
   ! read variable
   do idx=1,size(variable_name)
     select case (trim(variable_mapping(idx)))
@@ -328,154 +330,6 @@ subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
   end do
 end subroutine get_default_littler
 
-subroutine readstepnc(fname,var_name,ff, fill_value, lon, lat)
-  ! A condensed way to read a variable form  netcdf file
-  ! it is implied that the format is ff(time, device)
-  ! in:  - fname: netcdf filename
-  !      - var_name: name of variable to read
-  ! out: - ff: output array
-  !      - lon, lat: longitude and latitude of measurement
-  !      - fill_value: fill_value used in netcdf file
-  use netcdf
-  use f_udunits_2
-  use check_status
-  
-  implicit none
-  
-  ! declare calling variables
-  character(len=*),intent(in) :: fname, var_name
-  real,dimension(:),intent(out) :: ff
-  real,intent(out) :: lon, lat, fill_value
-  ! declare local variables
-  integer :: nc_id,var_id,ndim,nvar,nattr,unlim_id,fmt, &
-             ii,status,lo,la,le,ld,ti, device, dlength, charset, &
-             hour,minute,year,month,day
-  character(len=15) :: dname, varname
-  character(len=100) :: timeunits
-  real,dimension(:), allocatable:: var_dummy
-  real :: sf,ofs
-  real(c_double) :: second, tt, resolution, converted_time
-  type(cv_converter_ptr) :: time_cvt0, time_cvt
-  type(ut_system_ptr) :: sys
-  type(ut_unit_ptr) :: sec0, unit1, time_base0, time_base
-  real *8, parameter :: ZERO = 0.0
-  real,dimension(:),allocatable :: time
-  character(len=14),dimension(:),allocatable :: time_littler
-  
-  call check(nf90_open(fname,nf90_nowrite,nc_id))
-  call check(nf90_inquire(nc_id,ndim,nvar))
-  ! take the dimension names and lengths 
-  do ii=1,ndim
-    call check(NF90_INQUIRE_DIMENSION(nc_id,ii,dname,len=dlength))
-    select case (trim(dname))
-      case ('lon','LON','Lon','Longitude','longitude','LONGITUDE')
-        lo=dlength
-      case ('lat','LAT','Lat','Latitude','latitude','LATITUDE')
-        la=dlength
-      case ('lev','Lev','LEV','level','levelist','Level')
-        le=dlength
-      case ('device', 'DEVICE')
-        ld=dlength
-      case ('time','Time','TIME')
-        ti=dlength
-      case default
-        print*,' Error while reading dimensions....'
-        print*,' Some dimensions are missing.   '
-        print*,' The program is terminating....';STOP
-    end select
-  end do
-  ! extract latitude and longitude values
-  do ii=1,nvar
-    call check(nf90_inquire_variable(nc_id, ii, varname))
-    select case (trim(varname))
-      case ('lon','LON','Lon','Longitude','longitude','LONGITUDE')
-        call check(nf90_inq_varid(nc_id,trim(varname),var_id))
-        call check(nf90_get_var(nc_id, var_id, lon))
-      case ('lat','LAT','Lat','Latitude','latitude','LATITUDE')
-        call check(nf90_inq_varid(nc_id,trim(varname),var_id))
-        call check(nf90_get_var(nc_id, var_id, lat))
-    end select
-  end do
-  ! allocate the matrix for reading data. The definition is
-  allocate(var_dummy(ti))
-  ! Read all data
-  call check(nf90_inq_varid(nc_id,trim(var_name),var_id))
-  call check(nf90_get_var(nc_id,var_id,var_dummy, &
-             start=(/1,1/), count=(/1,ti/)))
-  ! asking if there are the scale_factor and add_offset attributes
-  status = nf90_get_att(nc_id,var_id,"scale_factor",sf)
-  if (status == -43) sf=1.0
-  status = nf90_get_att(nc_id,var_id,"add_offset",ofs)
-  if (status == -43) ofs = 0.0
-  ff = sf*var_dummy+ofs
-  status = nf90_get_att(nc_id,var_id,"_FillValue",fill_value)
-  call check(nf90_close(nc_id))
-  deallocate(var_dummy)
-end subroutine readstepnc
-
-
-subroutine readtimedim(fname, ti, time_littler)
-  ! read the time dimension of a netcdf file
-  ! in:     - fname: netcdf filename
-  ! out:    - ti : length of time axis
-  !         - time_littler: time in LITTLE_R format
-  use netcdf
-  use check_status
-  implicit none
-  ! declare calling variables
-  character(len=*),intent(in) :: fname
-  integer, intent(out) :: ti
-  character(len=14),dimension(:), intent(out), allocatable :: time_littler
-  ! declare local variables
-  integer :: nc_id,ndim,nvar, dlength, var_id, &
-             ii,lo,la,le,ld, device
-  character(len=15) :: dname, varname
-  character(len=100) :: timeunits
-  ! allocatable variables
-  real,dimension(:),allocatable :: time
-  ! define interface
-  interface
-    subroutine time_to_littler_date(time, timeunits, time_littler)
-      real,dimension(:),intent(in)    :: time
-      character(len=100), intent(in) :: timeunits
-      character(len=14), dimension(:), intent(out) :: time_littler
-    end subroutine time_to_littler_date
-  end interface
-  call check(nf90_open(fname,nf90_nowrite,nc_id))
-  call check(nf90_inquire(nc_id,ndim,nvar))
-  ! take the dimension names and lengths
-  do ii=1,ndim
-    call check(NF90_INQUIRE_DIMENSION(nc_id,ii,dname,len=dlength))
-    select case (TRIM(dname))
-      case ('lon','LON','Lon','Longitude','longitude','LONGITUDE')
-        lo=dlength
-      case ('lat','LAT','Lat','Latitude','latitude','LATITUDE')
-        la=dlength
-      case ('lev','Lev','LEV','level','levelist','Level')
-        le=dlength
-      case ('device', 'DEVICE')
-        ld=dlength
-      case ('time','Time','TIME')
-        ti=dlength
-    end select
-  end do
-  ! extract latitude and longitude values
-  do ii=1,nvar
-    call check(nf90_inquire_variable(nc_id, ii, varname))
-    select case (trim(varname))
-      case ('time','Time','TIME')
-        ! allocate dimensions time axis
-        allocate(time(ti))
-        allocate(time_littler(ti))
-        ! get time/timeunits from netcdf
-        call check(nf90_inq_varid(nc_id,TRIM(varname),var_id))
-        call check(nf90_get_var(nc_id, var_id, time))
-        call check(nf90_get_att(nc_id, var_id, 'units', timeunits))
-    end select
-  end do
-  ! convert time axis to little_r date unit
-  call time_to_littler_date(time, timeunits, time_littler)  
-end subroutine readtimedim
 
 
 subroutine time_to_littler_date(time, timeunits, time_littler)
