@@ -1,0 +1,7 @@
+&GROUP_NAME
+  filename = 'IZUIDHOL120.nc'
+  outfile = 'results2.txt'
+  variable_name = 'TemperatureC' 'Humidity' 'PressurehPa',
+  variable_mapping = 'temperature' 'humidity' 'pressure',
+  devices = 1,
+/

@@ -64,8 +64,8 @@ character(len=100) :: timeunits
 INTEGER:: pp
 REAL :: lon, lat
 
-character(len=30), dimension(2):: variable_name
-character(len=30), dimension(2):: variable_mapping
+character(len=30), dimension(4):: variable_name
+character(len=30), dimension(4):: variable_mapping
 character(len=30):: filename, outfile
 integer :: devices
 real :: fill_value
@@ -74,7 +74,7 @@ real :: fill_value
 ! get filename, variable_names and variable_mappings from namelist
 namelist /group_name/ filename, variable_name, variable_mapping, devices, &
     outfile
-  open(10,file='./wageningen.namelist')
+  open(10,file='./wageningen_single.namelist')
   read(10,group_name)
   close(10)
 
@@ -87,21 +87,28 @@ call readtimedim(filename, time, timeunits)
 timeLength = size(time)
 allocate(time_littler(timeLength))
 call time_to_littler_date(time, timeunits, time_littler)
-
 ! loop over all devices
-do device=1,devices
+do device=1,1
   ! read variable
   do idx=1,size(variable_name)
     select case (trim(variable_mapping(idx)))
     case ('temperature')
       if (allocated(temperature)) deallocate(temperature)
       allocate(temperature(timeLength))
-      CALL readstepnc (filename, trim(variable_name(idx)), &
-        temperature, fill_value, lon, lat, device)
+      CALL readstepnc_single (filename, trim(variable_name(idx)), &
+        temperature, fill_value, lon, lat)
       case ('humidity')
         if (.not. allocated(humidity)) allocate(humidity(timeLength))
-        CALL readstepnc (filename, variable_name(idx), humidity, &
-          fill_value, lon, lat, device)
+        CALL readstepnc_single (filename, variable_name(idx), humidity, &
+          fill_value, lon, lat)
+      case ('speed')
+        if (.not. allocated(speed)) allocate(speed(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), speed, &
+          fill_value, lon, lat)
+      case ('pressure')
+        if (.not. allocated(pressure)) allocate(pressure(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), pressure, &
+          fill_value, lon, lat)
     end select
   end do
   ! put this in a subroutine or function
@@ -110,7 +117,7 @@ do device=1,devices
     ! add: allow for multiple levels
     if (ANY(variable_mapping=="pressure" ) .AND. &
       (pressure(idx) /= fill_value)) then
-      p = pressure(idx)
+      p = 100. * pressure(idx)
     else
       p = dpressure
     end if
@@ -135,7 +142,7 @@ do device=1,devices
     end if
     if (ANY(variable_mapping=="speed" ) .AND. &
       (spd(idx) /= fill_value)) then
-      spd = speed(idx)
+      spd = (1000. * speed(idx)) / 3600.
     else
       spd = dspeed
     end if
@@ -157,7 +164,7 @@ do device=1,devices
     else
       v = dv
     end if
-    if (ANY(variable_mapping=="temperature" ) .AND. &
+    if (ANY(variable_mapping=="humidity" ) .AND. &
       (humidity(idx) /= fill_value)) then
       rh = humidity(idx)
     else

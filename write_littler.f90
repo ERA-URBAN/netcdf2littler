@@ -8,7 +8,7 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
   p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
   slp , ter , xlat , xlon , timechar , kx , &
   string1 , string2 , string3 , string4 , bogus , iseq_num , &
-  iunit )
+  iunit, outfile )
   ! TODO: add fields in the header format as arguments
   ! write observations in LITTLE_R format for WRF data assimilation
   ! in: - data variables &* strings to write in LITTLE_R format
@@ -19,6 +19,7 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
   real, intent(in) :: xlon, xlat, slp, ter
   integer,dimension(kx),intent(in) :: p_qc,z_qc,t_qc,td_qc,spd_qc
   integer, dimension(kx), intent(in) :: dir_qc,u_qc,v_qc,rh_qc,thick_qc
+  character(len=30), intent(in) :: outfile
   integer :: iseq_num
   character(len=14) :: timechar
   character *20 date_char
@@ -34,6 +35,9 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
   meas_format =  ' ( 10( f13.5 , i7 ) ) '
   end_format = ' ( 3 ( i7 ) ) ' 
 
+  ! output file
+  open (unit=iunit,file=outfile,action="write")
+  
   ! write header record
   WRITE ( UNIT = iunit , ERR = 19 , FMT = rpt_format ) &
     xlat,xlon, string1 , string2 , &
@@ -59,7 +63,6 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
       -888888.,0, -888888.,0, -888888.,0, &
       -888888.,0
       WRITE ( UNIT = iunit , ERR = 19 , FMT = end_format )  kx, 0, 0
-
       return
 19    continue
       print *,'troubles writing a sounding'

@@ -1,5 +1,7 @@
 &GROUP_NAME
   filename = 'all.nc'
+  outfile = 'results2.txt'
   variable_name = 'temperature' 'humidity',
   variable_mapping = 'temperature' 'humidity'
+  devices = 20
 /
