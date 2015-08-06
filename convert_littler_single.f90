@@ -67,6 +67,7 @@ REAL :: lon, lat
 character(len=30), dimension(4):: variable_name
 character(len=30), dimension(4):: variable_mapping
 character(len=30):: filename, outfile
+character(len=255):: dirname
 integer :: devices
 real :: fill_value
       
