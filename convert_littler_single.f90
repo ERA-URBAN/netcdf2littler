@@ -118,7 +118,7 @@ do device=1,1
         if (.not. allocated(uwind)) allocate(uwind(timeLength))
         CALL readstepnc_single (filename, variable_name(idx), uwind, &
           fill_value, lon, lat)
-      case ('uwind')
+      case ('vwind')
         if (.not. allocated(vwind)) allocate(vwind(timeLength))
         CALL readstepnc_single (filename, variable_name(idx), vwind, &
           fill_value, lon, lat)
