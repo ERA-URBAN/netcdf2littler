@@ -102,6 +102,34 @@ do device=1,devices
         if (.not. allocated(humidity)) allocate(humidity(timeLength))
         CALL readstepnc (filename, variable_name(idx), humidity, &
           fill_value, lon, lat, device)
+      case ('speed')
+        if (.not. allocated(speed)) allocate(speed(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), speed, &
+          fill_value, lon, lat)
+      case ('pressure')
+        if (.not. allocated(pressure)) allocate(pressure(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), pressure, &
+          fill_value, lon, lat)
+      case ('direction')
+        if (.not. allocated(direction)) allocate(direction(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), direction, &
+          fill_value, lon, lat)
+      case ('uwind')
+        if (.not. allocated(uwind)) allocate(uwind(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), uwind, &
+          fill_value, lon, lat)
+      case ('uwind')
+        if (.not. allocated(vwind)) allocate(vwind(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), vwind, &
+          fill_value, lon, lat)
+      case ('height')
+        if (.not. allocated(height)) allocate(height(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), height, &
+          fill_value, lon, lat)
+      case ('dew_point')
+        if (.not. allocated(dew_point)) allocate(dew_point(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), dew_point, &
+          fill_value, lon, lat)
     end select
   end do
   ! put this in a subroutine or function
