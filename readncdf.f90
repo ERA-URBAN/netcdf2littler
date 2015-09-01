@@ -224,7 +224,120 @@ subroutine readtimedim(fname, time, timeunits)
         call check(nf90_get_att(nc_id, var_id, 'units', timeunits))
     end select
   end do
-
 end subroutine readtimedim
+
+
+subroutine read_variables(humidity, height, speed, temperature, dew_point, &
+  pressure, direction, thickness, uwind, vwind, variable_name, &
+  variable_mapping, filename, fill_value, idx, device, dimensions)
+  !
+  ! description
+  !
+  implicit none
+  REAL,DIMENSION(:), ALLOCATABLE, intent(out) :: humidity, height, speed
+  REAL,DIMENSION(:), ALLOCATABLE, intent(out) :: temperature, dew_point
+  REAL,DIMENSION(:), ALLOCATABLE, intent(out) :: pressure, direction, thickness
+  REAL,DIMENSION(:), ALLOCATABLE, intent(out) :: uwind, vwind
+        
+  character(len=14), dimension(:), allocatable :: time_littler
+  real,dimension(:), allocatable    :: time
+  character(len=100) :: timeunits
+  INTEGER :: timeLength
+  REAL :: lon, lat
+  integer, intent(in) :: idx
+  integer, intent(in) :: device
+  character(len=30), dimension(2), intent(in):: variable_name
+  character(len=30), dimension(2), intent(in):: variable_mapping
+  character(len=30), intent(in) :: filename
+  real, intent(out) :: fill_value
+  integer, intent(in) :: dimensions
+  
+  
+  select case (dimensions)
+  case (1)  ! dimensions==1
+    select case (trim(variable_mapping(idx)))
+    case ('temperature')
+      if (allocated(temperature)) deallocate(temperature)
+      allocate(temperature(timeLength))
+      CALL readstepnc_single (filename, trim(variable_name(idx)), &
+        temperature, fill_value, lon, lat)
+      case ('humidity')
+        if (.not. allocated(humidity)) allocate(humidity(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), humidity, &
+          fill_value, lon, lat)
+      case ('speed')
+        if (.not. allocated(speed)) allocate(speed(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), speed, &
+          fill_value, lon, lat)
+      case ('pressure')
+        if (.not. allocated(pressure)) allocate(pressure(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), pressure, &
+          fill_value, lon, lat)
+      case ('direction')
+        if (.not. allocated(direction)) allocate(direction(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), direction, &
+          fill_value, lon, lat)
+      case ('uwind')
+        if (.not. allocated(uwind)) allocate(uwind(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), uwind, &
+          fill_value, lon, lat)
+      case ('vwind')
+        if (.not. allocated(vwind)) allocate(vwind(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), vwind, &
+          fill_value, lon, lat)
+      case ('height')
+        if (.not. allocated(height)) allocate(height(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), height, &
+          fill_value, lon, lat)
+      case ('dew_point')
+        if (.not. allocated(dew_point)) allocate(dew_point(timeLength))
+        CALL readstepnc_single (filename, variable_name(idx), dew_point, &
+          fill_value, lon, lat)
+    end select
+  case (2)  ! dimensions ==2
+    select case (trim(variable_mapping(idx)))
+    case ('temperature')
+      if (allocated(temperature)) deallocate(temperature)
+      allocate(temperature(timeLength))
+      CALL readstepnc (filename, trim(variable_name(idx)), &
+        temperature, fill_value, lon, lat, device)
+      case ('humidity')
+        if (.not. allocated(humidity)) allocate(humidity(timeLength))
+        CALL readstepnc (filename, variable_name(idx), humidity, &
+          fill_value, lon, lat, device)
+      case ('speed')
+        if (.not. allocated(speed)) allocate(speed(timeLength))
+        CALL readstepnc (filename, variable_name(idx), speed, &
+          fill_value, lon, lat, device)
+      case ('pressure')
+        if (.not. allocated(pressure)) allocate(pressure(timeLength))
+        CALL readstepnc (filename, variable_name(idx), pressure, &
+          fill_value, lon, lat, device)
+      case ('direction')
+        if (.not. allocated(direction)) allocate(direction(timeLength))
+        CALL readstepnc (filename, variable_name(idx), direction, &
+          fill_value, lon, lat, device)
+      case ('uwind')
+        if (.not. allocated(uwind)) allocate(uwind(timeLength))
+        CALL readstepnc (filename, variable_name(idx), uwind, &
+          fill_value, lon, lat, device)
+      case ('vwind')
+        if (.not. allocated(vwind)) allocate(vwind(timeLength))
+        CALL readstepnc (filename, variable_name(idx), vwind, &
+          fill_value, lon, lat, device)
+      case ('height')
+        if (.not. allocated(height)) allocate(height(timeLength))
+        CALL readstepnc (filename, variable_name(idx), height, &
+          fill_value, lon, lat, device)
+      case ('dew_point')
+        if (.not. allocated(dew_point)) allocate(dew_point(timeLength))
+        CALL readstepnc (filename, variable_name(idx), dew_point, &
+          fill_value, lon, lat, device)
+    end select
+  case DEFAULT
+    STOP 'dimensions should be either 1 or 2'
+  end select
+  
+end subroutine read_variables
 
 end module readncdf

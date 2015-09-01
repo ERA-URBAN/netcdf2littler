@@ -4,4 +4,5 @@
   variable_name = 'temperature' 'humidity',
   variable_mapping = 'temperature' 'humidity'
   devices = 20
+  dimensions = 2
 /
