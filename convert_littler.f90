@@ -26,6 +26,7 @@ program netcdftolittler
 
 use readncdf
 use write_littler
+use logging
 
 implicit none
 
@@ -46,30 +47,25 @@ real, dimension(kx) ::  dspeed, ddirection, du, dv, drh, dthickness
 integer, dimension(kx) :: dpressure_qc, dheight_qc, dtemperature_qc
 integer, dimension(kx) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
 integer, dimension(kx) :: dv_qc, drh_qc, dthickness_qc
-      
 character(len=14) :: timechar
 character *20 date_char
 character *40 string1, string2 , string3 , string4
-          
 INTEGER :: timeLength, device
 REAL,DIMENSION(:), ALLOCATABLE :: humidity, height, speed
 REAL,DIMENSION(:), ALLOCATABLE :: temperature, dew_point
 REAL,DIMENSION(:), ALLOCATABLE :: pressure, direction, thickness
 REAL,DIMENSION(:), ALLOCATABLE :: uwind, vwind
-      
 character(len=14), dimension(:), allocatable :: time_littler
 real,dimension(:), allocatable    :: time
 character(len=100) :: timeunits
-
-INTEGER:: pp
 REAL :: lon, lat
-
 character(len=30), dimension(2):: variable_name
 character(len=30), dimension(2):: variable_mapping
 character(len=30):: filename, outfile
 integer :: devices, dimensions
 real :: fill_value
-      
+integer :: logunit
+character(19) :: datetime
 
 ! get filename, variable_names and variable_mappings from namelist
 namelist /group_name/ filename, variable_name, variable_mapping, devices, &
@@ -78,25 +74,34 @@ namelist /group_name/ filename, variable_name, variable_mapping, devices, &
   read(10,group_name)
   close(10)
 
+! define logging file
+logunit=99
+open(unit=logunit,file='convert_littler.log',form='formatted')
+call log_message('INFO', 'Parsing namelist finished.')
+
 ! check if dimensions and namelist are correct in namelist
 if (.not. ((dimensions==1 .AND. devices==1) .or. &
   (dimensions==2 .AND. devices>=1))) then
-    STOP 'Error in namelist specification of dimensions and devices'
+  call log_message('ERROR', 'Error in namelist specification of &
+    & dimensions and devices.')
+  STOP 'Error in namelist specification of dimensions and devices'
 end if
 
-call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
-  dspeed, ddirection, du, dv, drh, dthickness,dpressure_qc, &
-  dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, &
-  ddirection_qc, du_qc, dv_qc, drh_qc, dthickness_qc, kx)
-! get length of time axis and time axis
+call current_datetime(datetime)
+! get time and time units
+call log_message('INFO', 'Extracting time and &
+  & time units from netcdf file.')
 call readtimedim(filename, time, timeunits)
 timeLength = size(time)
 allocate(time_littler(timeLength))
+call log_message('INFO', 'Converting time to little_R date format')
 call time_to_littler_date(time, timeunits, time_littler)
 
 ! loop over all devices
 do device=1,devices
+  call log_message('INFO', 'Processing devices.')
   ! read variable
+  stop
   do idx=1,size(variable_name)
     call read_variables(humidity, height, speed, temperature, dew_point, &
       pressure, direction, thickness, uwind, vwind, variable_name, &
