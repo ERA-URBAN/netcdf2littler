@@ -24,4 +24,28 @@ implicit none
     write(99, '(A, T22, A,T31,A)') datetime, logtype, logmessage
   end subroutine log_message
 
+
+  pure character(len=99) function concat_str_int(string, num_i)
+    ! concatenate string and integer
+    character(len=*), intent(in) :: string
+    integer, intent(in) :: num_i
+    character(len=99) :: char_num
+    write(char_num, *) num_i
+    ! concatenate string and integer
+    concat_str_int = adjustl(string)//trim(adjustl(char_num))
+    return
+  end function concat_str_int
+
+
+  pure character(len=99) function concat_str_real(string, num_i)
+    ! concatenate string and real
+    character(len=*), intent(in) :: string
+    real, intent(in) :: num_i
+    character(len=99) :: char_num
+    write(char_num, *) num_i
+    ! concatenate string and integer
+    concat_str_real = adjustl(string)//trim(adjustl(char_num))
+    return
+  end function concat_str_real
+
 end module logging

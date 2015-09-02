@@ -99,15 +99,16 @@ call time_to_littler_date(time, timeunits, time_littler)
 
 ! loop over all devices
 do device=1,devices
-  call log_message('INFO', 'Processing devices.')
+  call log_message('INFO', concat_str_int('Processing devices, device: ', &
+    device))
   ! read variable
-  stop
   do idx=1,size(variable_name)
+    ! read specified variables from netCDF file
     call read_variables(humidity, height, speed, temperature, dew_point, &
       pressure, direction, thickness, uwind, vwind, variable_name, &
       variable_mapping, filename, fill_value, idx, device, dimensions)
   end do
-  ! put this in a subroutine or function
+  ! write obs to file in LITTLE_R format
   call write_obs_littler(p,z,t,td,spd,dir,u,v,rh,thick, &
     p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
     slp , ter , lat , lon , variable_mapping, kx, bogus, iseq_num, time_littler, &
