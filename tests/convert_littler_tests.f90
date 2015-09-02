@@ -12,7 +12,7 @@ public :: main
 
 integer, parameter :: stdout = 6
 
-contains
+  contains
 
 logical function assert(condition, test_name)
  ! asserts if the condition is true/false and returns the status of the tests
@@ -75,11 +75,19 @@ subroutine main
   logical,dimension(:),allocatable :: tests  ! logical array with test results
   INTEGER :: ntests  ! total number of tests
   INTEGER :: n=1  ! test counter
-  ntests = 21  ! modify if adding new tests
+  ntests = 32  ! modify if adding new tests
   call initialize_tests(tests,ntests)
   call test_dateint(tests, n)
   call test_get_default_littler(tests, n)
+  call test_readtimedim(tests, n)
+  call test_readstepnc_single(tests, n)
   call report_tests(tests)
+  ! remove this statement later, used for keeping track of ntests
+  if ( n/=ntests ) then
+    print *, 'WARNING'
+    print *, 'Total number of actual tests performed was: ', n
+    print *, 'Total number of tests set (ntests) was: ', ntests
+  end if
 end subroutine main
 
 
@@ -147,6 +155,52 @@ subroutine test_get_default_littler(tests, n)
   tests(n) = assert(drh_qc(1)==0, 'get_default_littler: default relative humidity_qc')
   n=n+1
   tests(n) = assert(dthickness_qc(1)==0, 'get_default_littler: default thickness_qc')
+  n=n+1
 end subroutine test_get_default_littler
+
+
+subroutine test_readtimedim(tests, n)
+  ! unit test for readtimedim subroutine
+  integer, intent(inout) :: n
+  logical, dimension(*), intent(inout) :: tests
+  real,dimension(:), allocatable     :: time
+  character(len=100) :: timeunits
+  call readtimedim('../test_data/test_1d.nc', time, timeunits)
+  tests(n) = assert(time(5)==138750896., 'readtimedim: time (1d) - 1')
+  n=n+1
+  tests(n) = assert((time(9)-time(1))==2400., 'readtimedim: time (1d) - 2')
+  n=n+1
+  tests(n) = assert(timeunits=='seconds since 2010-01-01 00:00', &
+    'readtimedim: timeunits (1d)')
+  n=n+1
+  call readtimedim('../test_data/test_2d.nc', time, timeunits)
+  tests(n) = assert(time(5)==138750896., 'readtimedim: time (2d) - 1')
+  n=n+1
+  tests(n) = assert((time(9)-time(1))==2400., 'readtimedim: time (2d) - 2')
+  n=n+1
+  tests(n) = assert(timeunits=='seconds since 2010-01-01 00:00', &
+    'readtimedim: timeunits (2d)')
+  n=n+1
+end subroutine test_readtimedim
+
+
+subroutine test_readstepnc_single(tests, n)
+  ! unit test for readstepnc_single subroutine
+  integer, intent(inout) :: n
+  logical, dimension(*), intent(inout) :: tests
+  real, dimension(10) :: ff
+  real :: lon, lat, fill_value
+  call readstepnc_single('../test_data/test_1d.nc','temperature', ff, &
+    fill_value, lon, lat)
+  tests(n) = assert(lon==4.88883305, 'readstepnc_single: longitude')
+  n=n+1
+  tests(n) = assert(lat==52.3687325, 'readstepnc_single: latitude')
+  n=n+1
+  tests(n) = assert(ff(3)==20.5000000, 'readstepnc_single: array value')
+  n=n+1
+  tests(n) = assert((ff(1)-ff(10))==1.50000000, 'readstepnc_single: array value difference')
+  n=n+1
+end subroutine test_readstepnc_single
+
 
 end module convert_littler_tests
