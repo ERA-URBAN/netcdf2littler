@@ -159,7 +159,7 @@ subroutine time_to_littler_date(time, timeunits, time_littler)
     converted_time = f_cv_convert_double(time_cvt0,tt)
     call f_ut_decode_time(converted_time,year,month,day,hour,minute, &
                           second, resolution)
-    time_littler(ii) = dateint(hour,minute,year,month,day,int(second))
+    time_littler(ii) = dateint(year,month,day,hour,minute,int(second))
   end do
 
   call log_message('DEBUG', 'Leaving subroutine time_to_littler_date')
@@ -167,7 +167,7 @@ subroutine time_to_littler_date(time, timeunits, time_littler)
 end subroutine time_to_littler_date
 
 
-character(len=14) function dateint(hour,minute,year,month,day,second)
+character(len=14) function dateint(year,month,day,hour,minute,second)
   ! convert integers of hour, minute, year, month, day, second 
   ! into character string of YYYYMMDDhhmmss
   ! return character string
@@ -193,10 +193,11 @@ character(len=14) function dateint(hour,minute,year,month,day,second)
   return
 end function dateint
 
-subroutine write_obs_littler(p,z,t,td,spd,dir,u,v,rh,thick, &
+subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
+  direction,uwind,vwind,humidity,thickness, &
   p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
   slp , ter , lat , lon , variable_mapping, kx, bogus, iseq_num, time_littler, &
-  outfile )
+  fill_value, outfile )
   !
   ! description subroutine here
   !
@@ -211,20 +212,19 @@ subroutine write_obs_littler(p,z,t,td,spd,dir,u,v,rh,thick, &
   integer, dimension(kx) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
   integer, dimension(kx) :: dv_qc, drh_qc, dthickness_qc
   REAL, intent(in) :: lon, lat
-  character(len=30), dimension(2), intent(in):: variable_mapping
+  character(len=30), dimension(:), intent(in):: variable_mapping
   character(len=30), intent(in):: outfile
   real :: fill_value
   logical bogus
   integer :: idx
   integer, intent(in) :: iseq_num
   character(len=14), dimension(:), allocatable, intent(in) :: time_littler
-  REAL,DIMENSION(size(time_littler)) :: humidity, height, speed
-  REAL,DIMENSION(size(time_littler)) :: temperature, dew_point
-  REAL,DIMENSION(size(time_littler)) :: pressure, direction, thickness
-  REAL,DIMENSION(size(time_littler)) :: uwind, vwind
+  REAL,DIMENSION(:), intent(in) :: humidity, height, speed
+  REAL,DIMENSION(:), intent(in) :: temperature, dew_point
+  REAL,DIMENSION(:), intent(in) :: pressure, direction, thickness
+  REAL,DIMENSION(:), intent(in) :: uwind, vwind
 
   call log_message('DEBUG', 'Entering subroutine write_obs_littler')
-
   call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
   dspeed, ddirection, du, dv, drh, dthickness,dpressure_qc, &
   dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, &
