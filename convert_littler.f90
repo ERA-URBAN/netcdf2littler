@@ -135,7 +135,7 @@ do device=1,devices
   
   do idx=1,number_of_variables
     ! read specified variables from netCDF file
-    call read_variables(humidity, height, speed, temperature, dew_point, &
+    call read_variables(lat, lon, humidity, height, speed, temperature, dew_point, &
       pressure, direction, thickness, uwind, vwind, variable_name, &
       variable_mapping, filename, fill_value, idx, device, dimensions)
   end do

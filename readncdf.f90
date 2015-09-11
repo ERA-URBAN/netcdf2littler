@@ -233,7 +233,7 @@ subroutine readtimedim(fname, time, timeunits)
 end subroutine readtimedim
 
 
-subroutine read_variables(humidity, height, speed, temperature, dew_point, &
+subroutine read_variables(lat, lon, humidity, height, speed, temperature, dew_point, &
       pressure, direction, thickness, uwind, vwind, variable_name, &
       variable_mapping, filename, fill_value, idx, device, dimensions)
   !
@@ -243,11 +243,11 @@ subroutine read_variables(humidity, height, speed, temperature, dew_point, &
   REAL,DIMENSION(:), intent(inout) :: temperature, dew_point
   REAL,DIMENSION(:), intent(inout) :: pressure, direction, thickness
   REAL,DIMENSION(:), intent(inout) :: uwind, vwind
+  real, intent(out) :: lat, lon
         
   character(len=14), dimension(:), allocatable :: time_littler
   real,dimension(:), allocatable    :: time
   character(len=100) :: timeunits
-  REAL :: lon, lat
   integer, intent(in) :: idx
   integer, intent(in) :: device
   character(len=30), dimension(:), intent(in):: variable_name
