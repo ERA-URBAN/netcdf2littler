@@ -1,6 +1,6 @@
 main=convert_littler
 FC = gfortran
-FFLAGS = -Wimplicit-interface -ludunits -ffree-form
+FFLAGS = -Wimplicit-interface -ludunits2 -ffree-form
 FCFLAGS = -O0 -Wall
 OBJS = ../readncdf.o ../write_littler.o ../logging.o ../f_udunits_2.o ../check_status.o convert_littler_tests.o
 
