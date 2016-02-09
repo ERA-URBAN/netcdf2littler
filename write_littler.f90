@@ -6,7 +6,7 @@ implicit none
 
   contains
 
-subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
+subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick,rpressure, &
   p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
   slp , ter , xlat , xlon , timechar , kx , &
   string1 , string2 , string3 , string4 , bogus , iseq_num , &
@@ -17,8 +17,9 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
   ! otu: - output file in LITTLE_R format
   !implicit none
   integer :: kx, k, iunit
-  real,dimension(kx),intent(in) :: p,z,t,td,spd,dir,u,v,rh,thick
-  real, intent(in) :: xlon, xlat, slp, ter
+  real,dimension(kx),intent(in) :: p,z,t,td,spd,dir,u,v,rh,thick, slp
+  real,dimension(kx), intent(in) :: rpressure
+  real, intent(in) :: xlon, xlat, ter
   integer,dimension(kx),intent(in) :: p_qc,z_qc,t_qc,td_qc,spd_qc
   integer, dimension(kx), intent(in) :: dir_qc,u_qc,v_qc,rh_qc,thick_qc
   character(len=30), intent(in) :: outfile
@@ -30,7 +31,6 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
   character *22  meas_format 
   character *14  end_format
   logical bogus
-
   call log_message('DEBUG', 'Entering subroutine write_obs')
 
   rpt_format =  ' ( 2f20.5 , 2a40 , ' &
@@ -41,14 +41,13 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
 
   ! output file
   open (unit=iunit,file=outfile,action="write")
-  
   ! write header record
   WRITE ( UNIT = iunit , ERR = 19 , FMT = rpt_format ) &
     xlat,xlon, string1 , string2 , &
     string3 , string4 , ter, kx*6, 0,0,iseq_num,0, &
     .true.,bogus,.false., &
     -888888, -888888, timechar , &
-    slp,0,-888888.,0, -888888.,0, -888888.,0, -888888.,0, &
+    slp(1),0,rpressure(1),0, -888888.,0, -888888.,0, -888888.,0, &
     -888888.,0, &
     -888888.,0, -888888.,0, -888888.,0, -888888.,0, &
     -888888.,0, &
@@ -56,7 +55,7 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
    
   do k = 1 , kx
     WRITE ( UNIT = iunit , ERR = 19 , FMT = meas_format ) &
-               p(k), p_qc(k), z(k), z_qc(k), t(k), t_qc(k), td(k), td_qc(k), &
+               p(k), p_qc(k), ter+1.5, z_qc(k), t(k), t_qc(k), td(k), td_qc(k), &
                spd(k), spd_qc(k), dir(k), dir_qc(k), u(k), u_qc(k), &
                v(k), v_qc(k), rh(k), rh_qc(k), thick(k), thick_qc(k)
   end do
@@ -78,7 +77,7 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
 
 
 subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
-  dspeed, ddirection, du, dv, drh, dthickness,dpressure_qc, dheight_qc, dtemperature_qc, &
+  dspeed, ddirection, du, dv, drh, dthickness,dpsfc,drefpres, dpressure_qc, dheight_qc, dtemperature_qc, &
   ddew_point_qc, dspeed_qc, ddirection_qc, du_qc, &
   dv_qc, drh_qc, dthickness_qc, kx)
   ! set default values for LITTLE_R format
@@ -86,7 +85,8 @@ subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
   ! _qc = 0: no quality control
   integer, intent(in) :: kx
   real, dimension(kx), intent(out) :: dpressure, dheight, dtemperature, ddew_point
-  real, dimension(kx), intent(out) ::  dspeed, ddirection, du, dv, drh, dthickness
+  real, dimension(kx), intent(out) :: dspeed, ddirection, du, dv, drh, dthickness
+  real, dimension(kx), intent(out) :: dpsfc, drefpres
   integer, dimension(kx), intent(out) :: dpressure_qc, dheight_qc, dtemperature_qc
   integer, dimension(kx), intent(out) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
   integer, dimension(kx), intent(out) :: dv_qc, drh_qc, dthickness_qc
@@ -106,6 +106,8 @@ subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
     drh(k) = -888888.
     dthickness(k) = -888888.
     dpressure_qc(k) = 0
+    dpsfc(k) = -888888.
+    drefpres(k) = -888888.
     dheight_qc(k) = 0
     dtemperature_qc(k) = 0
     ddew_point_qc(k) = 0
@@ -194,39 +196,39 @@ character(len=14) function dateint(year,month,day,hour,minute,second)
 end function dateint
 
 subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
-  direction,uwind,vwind,humidity,thickness, &
+  direction,uwind,vwind,humidity,thickness,psfc,refpres, &
   p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
-  slp , ter , lat , lon , variable_mapping, kx, bogus, iseq_num, time_littler, &
+  ter , lat , lon , variable_mapping, kx, bogus, iseq_num, time_littler, &
   fill_value, outfile )
   !
   ! description subroutine here
   !
   integer, intent(in) :: kx
-  real,dimension(kx) :: p,z,t,td,spd,dir,u,v,rh,thick
+  real,dimension(kx) :: p,z,t,td,spd,dir,u,v,rh,thick,slp,rpressure
   integer,dimension(kx) :: p_qc,z_qc,t_qc,td_qc,spd_qc
-  real, intent(in) :: slp, ter
+  real, intent(in) :: ter
   integer, dimension(kx) :: dir_qc,u_qc,v_qc,rh_qc,thick_qc
-  real, dimension(kx) :: dpressure, dheight, dtemperature, ddew_point
-  real, dimension(kx) ::  dspeed, ddirection, du, dv, drh, dthickness
+  real, dimension(kx) :: dpressure, dheight, dtemperature, ddew_point, drefpres
+  real, dimension(kx) ::  dspeed, ddirection, du, dv, drh, dthickness, dpsfc
   integer, dimension(kx) :: dpressure_qc, dheight_qc, dtemperature_qc
   integer, dimension(kx) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
   integer, dimension(kx) :: dv_qc, drh_qc, dthickness_qc
   REAL, intent(in) :: lon, lat
   character(len=30), dimension(:), intent(in):: variable_mapping
   character(len=30), intent(in):: outfile
-  real :: fill_value
+  real, intent(in) :: fill_value
   logical bogus
   integer :: idx
   integer, intent(in) :: iseq_num
   character(len=14), dimension(:), allocatable, intent(in) :: time_littler
   REAL,DIMENSION(:), intent(in) :: humidity, height, speed
-  REAL,DIMENSION(:), intent(in) :: temperature, dew_point
+  REAL,DIMENSION(:), intent(in) :: temperature, dew_point, psfc
   REAL,DIMENSION(:), intent(in) :: pressure, direction, thickness
-  REAL,DIMENSION(:), intent(in) :: uwind, vwind
+  REAL,DIMENSION(:), intent(in) :: uwind, vwind, refpres
 
   call log_message('DEBUG', 'Entering subroutine write_obs_littler')
   call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
-  dspeed, ddirection, du, dv, drh, dthickness,dpressure_qc, &
+  dspeed, ddirection, du, dv, drh, dthickness,dpsfc,drefpres,dpressure_qc, &
   dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, &
   ddirection_qc, du_qc, dv_qc, drh_qc, dthickness_qc, kx)
   ! put this in a subroutine or function
@@ -234,7 +236,7 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
     ! set input data, fall back to default values
     ! add: allow for multiple levels
     if (ANY(variable_mapping=="pressure" ) .AND. &
-      (pressure(idx) /= fill_value)) then
+      (pressure(idx) > 9000)) then
       p = pressure(idx)
     else
       p = dpressure
@@ -243,7 +245,8 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
       (height(idx) /= fill_value)) then
       z = height(idx) ! either p or z must be defined
     else
-      z = dheight
+      ! z = dheight
+      z = 1.5  ! sea level pressure
     endif
     if (ANY(variable_mapping=="temperature" ) .AND. &
       (temperature(idx) /= fill_value)) then
@@ -253,12 +256,12 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
     end if
     if (ANY(variable_mapping=="dew_point" ) .AND. &
       (dew_point(idx) /= fill_value)) then
-      td = dew_point(idx)
+      td = (dew_point(idx)) + 273.15
     else
       td = ddew_point
     end if
     if (ANY(variable_mapping=="speed" ) .AND. &
-      (spd(idx) /= fill_value)) then
+      (spd(idx) /= -fill_value)) then
       spd = speed(idx)
     else
       spd = dspeed
@@ -293,6 +296,18 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
     else
       thick = dthickness
     end if
+    if (ANY(variable_mapping=="psfc" ) .AND. &
+      (psfc(idx) /= fill_value)) then
+      slp = psfc(idx)
+    else
+      slp = dpsfc
+    end if   
+    if (ANY(variable_mapping=="refpres" ) .AND. &
+      (refpres(idx) /= fill_value)) then
+      rpressure = refpres(idx)
+    else
+      rpressure = drefpres
+    end if 
     p_qc = dpressure_qc
     z_qc = dheight_qc
     t_qc = dtemperature_qc
@@ -304,7 +319,7 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
     rh_qc = drh_qc
     thick_qc = dthickness_qc
     if ( kx == 1 ) then ! surface variables
-      call write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
+      call write_obs(p,z,t,td,spd,dir,u,v,rh,thick,rpressure, &
         p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
         slp, ter, lat, lon, time_littler(idx), kx, &
         '99001  Maybe more site info             ', &
@@ -313,7 +328,7 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
         '                                        ', &
         bogus , iseq_num , 2, outfile )
     else ! vertical profile
-      call write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
+      call write_obs(p,z,t,td,spd,dir,u,v,rh,thick,rpressure, &
         p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
         slp, ter, lat, lon, time_littler(idx), kx, &
         '99001  Maybe more site info             ', &

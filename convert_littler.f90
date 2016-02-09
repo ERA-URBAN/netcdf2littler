@@ -33,12 +33,12 @@ implicit none
 integer, parameter :: kx=1
 
 logical bogus
-real :: slp, ter
+real :: ter
 integer :: idx
 data bogus /.false./
 integer:: iseq_num = 1
 
-real,dimension(kx) :: p,z,t,td,spd,dir,u,v,rh,thick
+real,dimension(kx) :: p,z,t,td,spd,dir,u,v,rh,thick, slp
 integer,dimension(kx) :: p_qc,z_qc,t_qc,td_qc,spd_qc
 integer, dimension(kx) :: dir_qc,u_qc,v_qc,rh_qc,thick_qc
 ! iseq_num: sequential number -> domain number
@@ -54,11 +54,12 @@ INTEGER :: timeLength, device
 REAL,DIMENSION(:), ALLOCATABLE :: humidity, height, speed
 REAL,DIMENSION(:), ALLOCATABLE :: temperature, dew_point
 REAL,DIMENSION(:), ALLOCATABLE :: pressure, direction, thickness
-REAL,DIMENSION(:), ALLOCATABLE :: uwind, vwind
+REAL,DIMENSION(:), ALLOCATABLE :: uwind, vwind, psfc, refpres
 character(len=14), dimension(:), allocatable :: time_littler
 real,dimension(:), allocatable    :: time
 character(len=100) :: timeunits
 REAL :: lon, lat
+real :: elevation
 character(len=30), dimension(99):: variable_name = 'not defined'
 character(len=30), dimension(99):: variable_mapping = 'not defined'
 character(len=30):: filename, outfile
@@ -124,6 +125,10 @@ do device=1,devices
   allocate(dew_point(timeLength))
   if (allocated(pressure)) deallocate(pressure)
   allocate(pressure(timeLength))
+  if (allocated(psfc)) deallocate(psfc)
+  allocate(psfc(timeLength))
+  if (allocated(refpres)) deallocate(refpres)
+  allocate(refpres(timeLength))
   if (allocated(direction)) deallocate(direction)
   allocate(direction(timeLength))
   if (allocated(thickness)) deallocate(thickness)
@@ -135,14 +140,14 @@ do device=1,devices
   
   do idx=1,number_of_variables
     ! read specified variables from netCDF file
-    call read_variables(lat, lon, humidity, height, speed, temperature, dew_point, &
-      pressure, direction, thickness, uwind, vwind, variable_name, &
+    call read_variables(lat, lon, elevation, humidity, height, speed, temperature, dew_point, &
+      pressure, psfc,refpres, direction, thickness, uwind, vwind, variable_name, &
       variable_mapping, filename, fill_value, idx, device, dimensions)
-  end do
+    end do
   ! write obs to file in LITTLE_R format
   call write_obs_littler(pressure,height,temperature,dew_point,speed, &
-  direction,uwind,vwind,humidity,thickness,p_qc,z_qc,t_qc,td_qc,spd_qc, &
-  dir_qc,u_qc,v_qc,rh_qc,thick_qc,slp,ter,lat,lon,variable_mapping, &
+  direction,uwind,vwind,humidity,thickness,psfc,refpres, p_qc,z_qc,t_qc,td_qc,spd_qc, &
+  dir_qc,u_qc,v_qc,rh_qc,thick_qc,elevation,lat,lon,variable_mapping, &
   kx, bogus, iseq_num, time_littler, fill_value, outfile )
 end do
 stop 99999
