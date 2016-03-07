@@ -107,12 +107,13 @@ subroutine test_get_default_littler(tests, n)
   integer, parameter :: kx=1
   real, dimension(kx) :: dpressure, dheight, dtemperature, ddew_point
   real, dimension(kx) ::  dspeed, ddirection, du, dv, drh, dthickness
+  real, dimension(kx) ::  dpsfc, drefpres
   integer, dimension(kx) :: dpressure_qc, dheight_qc, dtemperature_qc
   integer, dimension(kx) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
   integer, dimension(kx) :: dv_qc, drh_qc, dthickness_qc
   call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
-  dspeed, ddirection, du, dv, drh, dthickness,dpressure_qc, dheight_qc, dtemperature_qc, &
-  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc, &
+  dspeed, ddirection, du, dv, drh, dthickness, dpsfc, drefpres, dpressure_qc, &
+  dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, ddirection_qc, du_qc, &
   dv_qc, drh_qc, dthickness_qc, kx)
   ! default values
   tests(n) = assert(dpressure(1)==-888888., 'get_default_littler: default pressure')
@@ -189,12 +190,14 @@ subroutine test_readstepnc_single(tests, n)
   integer, intent(inout) :: n
   logical, dimension(*), intent(inout) :: tests
   real, dimension(10) :: ff
-  real :: lon, lat, fill_value
+  real :: lon, lat, elevation, fill_value
   call readstepnc_single('../test_data/test_1d.nc','temperature', ff, &
-    fill_value, lon, lat)
+    fill_value, lon, lat, elevation)
   tests(n) = assert(lon==4.88883305, 'readstepnc_single: longitude')
   n=n+1
   tests(n) = assert(lat==52.3687325, 'readstepnc_single: latitude')
+  n=n+1
+  tests(n) = assert(elevation==1.05, 'readstepnc_single: elevation')
   n=n+1
   tests(n) = assert(ff(3)==20.5000000, 'readstepnc_single: array value')
   n=n+1
