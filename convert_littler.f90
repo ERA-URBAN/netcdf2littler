@@ -65,7 +65,6 @@ character(len=30), dimension(99):: variable_mapping = 'not defined'
 character(len=30):: filename, outfile
 integer :: devices, dimensions
 real :: fill_value
-integer :: logunit
 character(19) :: datetime
 integer :: i, number_of_variables = 0
 
@@ -77,8 +76,8 @@ namelist /group_name/ filename, variable_name, variable_mapping, devices, &
   close(10)
 
 ! define logging file
-logunit=99
-open(unit=logunit,file='convert_littler.log',form='formatted')
+call define_logfile('convert_littler.log')
+
 call log_message('INFO', 'Parsing namelist finished.')
 
 ! find number of variables in namelist

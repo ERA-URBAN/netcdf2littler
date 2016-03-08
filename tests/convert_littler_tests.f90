@@ -74,8 +74,9 @@ subroutine main
   ! main routine that runs all the tests
   logical,dimension(:),allocatable :: tests  ! logical array with test results
   INTEGER :: ntests  ! total number of tests
-  INTEGER :: n=1  ! test counter
-  ntests = 32  ! modify if adding new tests
+  INTEGER :: n = 1  ! test counter
+  ntests = 33  ! modify if adding new tests
+  call define_logfile('write_littler_tests.log')
   call initialize_tests(tests,ntests)
   call test_dateint(tests, n)
   call test_get_default_littler(tests, n)

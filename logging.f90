@@ -4,6 +4,15 @@ implicit none
 
   contains
 
+  subroutine define_logfile(logfile)
+    ! define logging file
+    character(len=*), intent(in) :: logfile
+    integer :: logunit
+    logunit=99
+    open(unit=logunit,file=logfile, form='formatted')
+  end subroutine define_logfile
+
+
   subroutine current_datetime(datetime)
     ! set datetime to current date and time
     character(19), intent(out) :: datetime
