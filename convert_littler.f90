@@ -72,7 +72,7 @@ integer :: i, number_of_variables = 0
 ! get filename, variable_names and variable_mappings from namelist
 namelist /group_name/ filename, variable_name, variable_mapping, devices, &
     outfile, dimensions
-  open(10,file='./wageningen.namelist')
+  open(10,file='./input.namelist')
   read(10,group_name)
   close(10)
 
