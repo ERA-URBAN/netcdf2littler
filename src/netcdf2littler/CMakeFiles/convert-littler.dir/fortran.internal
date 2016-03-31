@@ -1,0 +1,6 @@
+# The fortran modules provided by this target.
+provides
+ check_status
+ logging
+ readncdf
+ write_littler

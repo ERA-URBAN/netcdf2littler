@@ -137,6 +137,10 @@ subroutine test_get_default_littler(tests, n)
   n=n+1
   tests(n) = assert(dthickness(1)==-888888., 'get_default_littler: default thickness')
   n=n+1
+  tests(n) = assert(dpsfc(1)==-888888., 'get_default_littler: default surface pressure')
+  n=n+1
+  tests(n) = assert(drefpres(1)==-888888., 'get_default_littler: reference pressure')
+  n=n+1
   ! default qc values
   tests(n) = assert(dpressure_qc(1)==0, 'get_default_littler: default pressure_qc')
   n=n+1

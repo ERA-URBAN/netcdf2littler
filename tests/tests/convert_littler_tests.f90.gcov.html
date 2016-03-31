@@ -1,0 +1,285 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - libbash_test.info - tests/convert_littler_tests.f90</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">tests</a> - convert_littler_tests.f90<span style="font-size: 80%;"> (source / <a href="convert_littler_tests.f90.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">libbash_test.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">115</td>
+            <td class="headerCovTableEntry">118</td>
+            <td class="headerCovTableEntryHi">97.5 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2016-03-07 16:43:33</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : module convert_littler_tests</a>
+<span class="lineNum">       2 </span>            : ! minimal unit testing framework for write_littler
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : use readncdf
+<span class="lineNum">       5 </span>            : use write_littler
+<span class="lineNum">       6 </span>            : use logging
+<span class="lineNum">       7 </span>            : 
+<span class="lineNum">       8 </span>            : implicit none
+<span class="lineNum">       9 </span>            : 
+<span class="lineNum">      10 </span>            : private
+<span class="lineNum">      11 </span>            : public :: main
+<span class="lineNum">      12 </span>            : 
+<span class="lineNum">      13 </span>            : integer, parameter :: stdout = 6
+<span class="lineNum">      14 </span>            : 
+<a name="15"><span class="lineNum">      15 </span>            :   contains</a>
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span><span class="lineCov">         32 : logical function assert(condition, test_name)</span>
+<span class="lineNum">      18 </span>            :  ! asserts if the condition is true/false and returns the status of the tests
+<span class="lineNum">      19 </span>            :   logical, intent(in) :: condition
+<span class="lineNum">      20 </span>            :   character(len=*), intent(in) :: test_name
+<span class="lineNum">      21 </span>            :   character(len=60) :: output_test_name
+<span class="lineNum">      22 </span><span class="lineCov">         32 :   assert = condition</span>
+<span class="lineNum">      23 </span><span class="lineCov">         32 :   output_test_name = test_name  ! report only first 60 characters of test_name</span>
+<span class="lineNum">      24 </span><span class="lineCov">         32 :   if (assert) then</span>
+<span class="lineNum">      25 </span>            :     write(unit=stdout, fmt='(A)')'test '//output_test_name//': '//&amp;
+<span class="lineNum">      26 </span><span class="lineCov">         31 :       char(27)//'[32mPASS'//char(27)//'[0m'</span>
+<span class="lineNum">      27 </span>            :   else
+<span class="lineNum">      28 </span>            :     write(unit=stdout, fmt='(A)')'test '//output_test_name//': '//&amp;
+<span class="lineNum">      29 </span><span class="lineCov">          1 :       char(27)//'[31mFAIL'//char(27)//'[0m'</span>
+<span class="lineNum">      30 </span>            :   end if
+<span class="lineNum">      31 </span><span class="lineCov">         64 : end function assert</span>
+<a name="32"><span class="lineNum">      32 </span>            : </a>
+<span class="lineNum">      33 </span>            : 
+<span class="lineNum">      34 </span><span class="lineCov">          1 : subroutine initialize_tests(tests, ntests)</span>
+<span class="lineNum">      35 </span>            :   ! allocate logical array with test results
+<span class="lineNum">      36 </span>            :   ! write output header to stdout
+<span class="lineNum">      37 </span>            :   logical, dimension(:), allocatable, intent(inout) :: tests
+<span class="lineNum">      38 </span>            :   integer, intent(in) :: ntests
+<span class="lineNum">      39 </span>            :   ! allocate logical array with test results
+<span class="lineNum">      40 </span><span class="lineCov">          1 :   if (allocated(tests)) deallocate(tests)</span>
+<span class="lineNum">      41 </span><span class="lineCov">          1 :   allocate(tests(ntests))</span>
+<span class="lineNum">      42 </span>            :   ! write header of test results
+<span class="lineNum">      43 </span><span class="lineCov">          1 :   write(unit=stdout, fmt='(A)')</span>
+<span class="lineNum">      44 </span><span class="lineCov">          1 :   write(unit=stdout, fmt='(71(&quot;-&quot;))')</span>
+<span class="lineNum">      45 </span><span class="lineCov">          1 :   write(unit=stdout, fmt='(T6, A,T66,A)') 'test name', 'result'</span>
+<span class="lineNum">      46 </span><span class="lineCov">          1 :   write(unit=stdout, fmt='(71(&quot;-&quot;))')</span>
+<span class="lineNum">      47 </span><span class="lineCov">          1 : end subroutine initialize_tests</span>
+<a name="48"><span class="lineNum">      48 </span>            : </a>
+<span class="lineNum">      49 </span>            : 
+<span class="lineNum">      50 </span><span class="lineCov">          1 : subroutine report_tests(tests)</span>
+<span class="lineNum">      51 </span>            : ! reports the total number of tests and the number of passes/fails
+<span class="lineNum">      52 </span>            :   logical, dimension(:), intent(in) :: tests
+<span class="lineNum">      53 </span>            :   integer :: n, nsuccess, nfailure
+<span class="lineNum">      54 </span>            :   ! set initial number of passes/fails to 0
+<span class="lineNum">      55 </span><span class="lineCov">          1 :   nsuccess = 0</span>
+<span class="lineNum">      56 </span><span class="lineCov">          1 :   nfailure = 0</span>
+<span class="lineNum">      57 </span>            :   ! loop over all tests and update passes/fails
+<span class="lineNum">      58 </span><span class="lineCov">         34 :   do n = 1, size(tests)  </span>
+<span class="lineNum">      59 </span><span class="lineCov">         33 :     if (tests(n)) then</span>
+<span class="lineNum">      60 </span><span class="lineCov">         32 :       nsuccess = nsuccess + 1</span>
+<span class="lineNum">      61 </span>            :     else
+<span class="lineNum">      62 </span><span class="lineCov">          1 :       nfailure = nfailure + 1</span>
+<span class="lineNum">      63 </span>            :     end if
+<span class="lineNum">      64 </span>            :   end do
+<span class="lineNum">      65 </span>            :   ! write the result to the screen
+<span class="lineNum">      66 </span><span class="lineCov">          1 :   write(unit=stdout, fmt='(71(&quot;-&quot;))')</span>
+<span class="lineNum">      67 </span><span class="lineCov">          1 :   write(unit=stdout, fmt='(A,I3,A)')'Ran a total of ', size(tests),' tests.'</span>
+<span class="lineNum">      68 </span><span class="lineCov">          1 :   write(unit=stdout, fmt='(I3,A,I3,A)')nsuccess,' tests PASSED, ',nfailure,' tests FAILED.'</span>
+<span class="lineNum">      69 </span><span class="lineCov">          1 :   write(unit=stdout, fmt='(A)')</span>
+<span class="lineNum">      70 </span><span class="lineCov">          1 : end subroutine report_tests</span>
+<a name="71"><span class="lineNum">      71 </span>            : </a>
+<span class="lineNum">      72 </span>            : 
+<span class="lineNum">      73 </span><span class="lineCov">          1 : subroutine main</span>
+<span class="lineNum">      74 </span>            :   ! main routine that runs all the tests
+<span class="lineNum">      75 </span><span class="lineCov">          1 :   logical,dimension(:),allocatable :: tests  ! logical array with test results</span>
+<span class="lineNum">      76 </span>            :   INTEGER :: ntests  ! total number of tests
+<span class="lineNum">      77 </span>            :   INTEGER :: n = 1  ! test counter
+<span class="lineNum">      78 </span><span class="lineCov">          1 :   ntests = 33  ! modify if adding new tests</span>
+<span class="lineNum">      79 </span><span class="lineCov">          1 :   call initialize_tests(tests,ntests)</span>
+<span class="lineNum">      80 </span><span class="lineCov">          1 :   call test_dateint(tests, n)</span>
+<span class="lineNum">      81 </span><span class="lineCov">          1 :   call test_get_default_littler(tests, n)</span>
+<span class="lineNum">      82 </span><span class="lineCov">          1 :   call test_readtimedim(tests, n)</span>
+<span class="lineNum">      83 </span><span class="lineCov">          1 :   call test_readstepnc_single(tests, n)</span>
+<span class="lineNum">      84 </span><span class="lineCov">          1 :   call report_tests(tests)</span>
+<span class="lineNum">      85 </span>            :   ! remove this statement later, used for keeping track of ntests
+<span class="lineNum">      86 </span><span class="lineCov">          1 :   if ( n/=ntests ) then</span>
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :     print *, 'WARNING'</span>
+<span class="lineNum">      88 </span><span class="lineNoCov">          0 :     print *, 'Total number of actual tests performed was: ', n</span>
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 :     print *, 'Total number of tests set (ntests) was: ', ntests</span>
+<span class="lineNum">      90 </span>            :   end if
+<span class="lineNum">      91 </span><span class="lineCov">          1 : end subroutine main</span>
+<a name="92"><span class="lineNum">      92 </span>            : </a>
+<span class="lineNum">      93 </span>            : 
+<span class="lineNum">      94 </span><span class="lineCov">          1 : subroutine test_dateint(tests, n)</span>
+<span class="lineNum">      95 </span>            :   ! test if dateint returns a character string with YYYYMMDDHHMMSS
+<span class="lineNum">      96 </span>            :   integer, intent(inout) :: n
+<span class="lineNum">      97 </span>            :   logical, dimension(*), intent(inout) :: tests
+<span class="lineNum">      98 </span><span class="lineCov">          1 :   tests(n) = assert(dateint(2010,01,02,23,30,59)=='20100102233059', 'dateint')</span>
+<span class="lineNum">      99 </span><span class="lineCov">          1 :   n = n+1</span>
+<span class="lineNum">     100 </span><span class="lineCov">          1 : end subroutine test_dateint</span>
+<a name="101"><span class="lineNum">     101 </span>            : </a>
+<span class="lineNum">     102 </span>            : 
+<span class="lineNum">     103 </span><span class="lineCov">          1 : subroutine test_get_default_littler(tests, n)</span>
+<span class="lineNum">     104 </span>            :   ! description
+<span class="lineNum">     105 </span>            :   integer, intent(inout) :: n
+<span class="lineNum">     106 </span>            :   logical, dimension(*), intent(inout) :: tests
+<span class="lineNum">     107 </span>            :   integer, parameter :: kx=1
+<span class="lineNum">     108 </span>            :   real, dimension(kx) :: dpressure, dheight, dtemperature, ddew_point
+<span class="lineNum">     109 </span>            :   real, dimension(kx) ::  dspeed, ddirection, du, dv, drh, dthickness
+<span class="lineNum">     110 </span>            :   real, dimension(kx) ::  dpsfc, drefpres
+<span class="lineNum">     111 </span>            :   integer, dimension(kx) :: dpressure_qc, dheight_qc, dtemperature_qc
+<span class="lineNum">     112 </span>            :   integer, dimension(kx) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
+<span class="lineNum">     113 </span>            :   integer, dimension(kx) :: dv_qc, drh_qc, dthickness_qc
+<span class="lineNum">     114 </span>            :   call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &amp;
+<span class="lineNum">     115 </span>            :   dspeed, ddirection, du, dv, drh, dthickness, dpsfc, drefpres, dpressure_qc, &amp;
+<span class="lineNum">     116 </span>            :   dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, ddirection_qc, du_qc, &amp;
+<span class="lineNum">     117 </span><span class="lineCov">          1 :   dv_qc, drh_qc, dthickness_qc, kx)</span>
+<span class="lineNum">     118 </span>            :   ! default values
+<span class="lineNum">     119 </span><span class="lineCov">          1 :   tests(n) = assert(dpressure(1)==-888888., 'get_default_littler: default pressure')</span>
+<span class="lineNum">     120 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     121 </span><span class="lineCov">          1 :   tests(n) = assert(dheight(1)==-888888., 'get_default_littler: default height')</span>
+<span class="lineNum">     122 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     123 </span><span class="lineCov">          1 :   tests(n) = assert(dtemperature(1)==-888888., 'get_default_littler: default temperature')</span>
+<span class="lineNum">     124 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     125 </span><span class="lineCov">          1 :   tests(n) = assert(ddew_point(1)==-888888., 'get_default_littler: default dew_point')</span>
+<span class="lineNum">     126 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     127 </span><span class="lineCov">          1 :   tests(n) = assert(dspeed(1)==-888888., 'get_default_littler: default speed')</span>
+<span class="lineNum">     128 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     129 </span><span class="lineCov">          1 :   tests(n) = assert(ddirection(1)==-888888., 'get_default_littler: default direction')</span>
+<span class="lineNum">     130 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     131 </span><span class="lineCov">          1 :   tests(n) = assert(du(1)==-888888., 'get_default_littler: default u velocity')</span>
+<span class="lineNum">     132 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     133 </span><span class="lineCov">          1 :   tests(n) = assert(dv(1)==-888888., 'get_default_littler: default v velocity')</span>
+<span class="lineNum">     134 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     135 </span><span class="lineCov">          1 :   tests(n) = assert(drh(1)==-888888., 'get_default_littler: default relative humidity')</span>
+<span class="lineNum">     136 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     137 </span><span class="lineCov">          1 :   tests(n) = assert(dthickness(1)==-888888., 'get_default_littler: default thickness')</span>
+<span class="lineNum">     138 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     139 </span>            :   ! default qc values
+<span class="lineNum">     140 </span><span class="lineCov">          1 :   tests(n) = assert(dpressure_qc(1)==0, 'get_default_littler: default pressure_qc')</span>
+<span class="lineNum">     141 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     142 </span><span class="lineCov">          1 :   tests(n) = assert(dheight_qc(1)==0, 'get_default_littler: default height_qc')</span>
+<span class="lineNum">     143 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     144 </span><span class="lineCov">          1 :   tests(n) = assert(dtemperature_qc(1)==0, 'get_default_littler: default temperature_qc')</span>
+<span class="lineNum">     145 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     146 </span><span class="lineCov">          1 :   tests(n) = assert(ddew_point_qc(1)==0, 'get_default_littler: default dew_point_qc')</span>
+<span class="lineNum">     147 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     148 </span><span class="lineCov">          1 :   tests(n) = assert(dspeed_qc(1)==0, 'get_default_littler: default speed_qc')</span>
+<span class="lineNum">     149 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     150 </span><span class="lineCov">          1 :   tests(n) = assert(ddirection_qc(1)==0, 'get_default_littler: default direction_qc')</span>
+<span class="lineNum">     151 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     152 </span><span class="lineCov">          1 :   tests(n) = assert(du_qc(1)==0, 'get_default_littler: default u velocity_qc')</span>
+<span class="lineNum">     153 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     154 </span><span class="lineCov">          1 :   tests(n) = assert(dv_qc(1)==0, 'get_default_littler: default v velocity_qc')</span>
+<span class="lineNum">     155 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     156 </span><span class="lineCov">          1 :   tests(n) = assert(drh_qc(1)==0, 'get_default_littler: default relative humidity_qc')</span>
+<span class="lineNum">     157 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     158 </span><span class="lineCov">          1 :   tests(n) = assert(dthickness_qc(1)==0, 'get_default_littler: default thickness_qc')</span>
+<span class="lineNum">     159 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     160 </span><span class="lineCov">          1 : end subroutine test_get_default_littler</span>
+<a name="161"><span class="lineNum">     161 </span>            : </a>
+<span class="lineNum">     162 </span>            : 
+<span class="lineNum">     163 </span><span class="lineCov">          1 : subroutine test_readtimedim(tests, n)</span>
+<span class="lineNum">     164 </span>            :   ! unit test for readtimedim subroutine
+<span class="lineNum">     165 </span>            :   integer, intent(inout) :: n
+<span class="lineNum">     166 </span>            :   logical, dimension(*), intent(inout) :: tests
+<span class="lineNum">     167 </span><span class="lineCov">          1 :   real,dimension(:), allocatable     :: time</span>
+<span class="lineNum">     168 </span>            :   character(len=100) :: timeunits
+<span class="lineNum">     169 </span><span class="lineCov">          1 :   call readtimedim('../test_data/test_1d.nc', time, timeunits)</span>
+<span class="lineNum">     170 </span><span class="lineCov">          1 :   tests(n) = assert(time(5)==138750896., 'readtimedim: time (1d) - 1')</span>
+<span class="lineNum">     171 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     172 </span><span class="lineCov">          1 :   tests(n) = assert((time(9)-time(1))==2400., 'readtimedim: time (1d) - 2')</span>
+<span class="lineNum">     173 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     174 </span>            :   tests(n) = assert(timeunits=='seconds since 2010-01-01 00:00', &amp;
+<span class="lineNum">     175 </span><span class="lineCov">          1 :     'readtimedim: timeunits (1d)')</span>
+<span class="lineNum">     176 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     177 </span><span class="lineCov">          1 :   call readtimedim('../test_data/test_2d.nc', time, timeunits)</span>
+<span class="lineNum">     178 </span><span class="lineCov">          1 :   tests(n) = assert(time(5)==138750896., 'readtimedim: time (2d) - 1')</span>
+<span class="lineNum">     179 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     180 </span><span class="lineCov">          1 :   tests(n) = assert((time(9)-time(1))==2400., 'readtimedim: time (2d) - 2')</span>
+<span class="lineNum">     181 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     182 </span>            :   tests(n) = assert(timeunits=='seconds since 2010-01-01 00:00', &amp;
+<span class="lineNum">     183 </span><span class="lineCov">          1 :     'readtimedim: timeunits (2d)')</span>
+<span class="lineNum">     184 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     185 </span><span class="lineCov">          1 : end subroutine test_readtimedim</span>
+<a name="186"><span class="lineNum">     186 </span>            : </a>
+<span class="lineNum">     187 </span>            : 
+<span class="lineNum">     188 </span><span class="lineCov">          1 : subroutine test_readstepnc_single(tests, n)</span>
+<span class="lineNum">     189 </span>            :   ! unit test for readstepnc_single subroutine
+<span class="lineNum">     190 </span>            :   integer, intent(inout) :: n
+<span class="lineNum">     191 </span>            :   logical, dimension(*), intent(inout) :: tests
+<span class="lineNum">     192 </span>            :   real, dimension(10) :: ff
+<span class="lineNum">     193 </span>            :   real :: lon, lat, elevation, fill_value
+<span class="lineNum">     194 </span>            :   call readstepnc_single('../test_data/test_1d.nc','temperature', ff, &amp;
+<span class="lineNum">     195 </span><span class="lineCov">          1 :     fill_value, lon, lat, elevation)</span>
+<span class="lineNum">     196 </span><span class="lineCov">          1 :   tests(n) = assert(lon==4.88883305, 'readstepnc_single: longitude')</span>
+<span class="lineNum">     197 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     198 </span><span class="lineCov">          1 :   tests(n) = assert(lat==52.3687325, 'readstepnc_single: latitude')</span>
+<span class="lineNum">     199 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     200 </span><span class="lineCov">          1 :   tests(n) = assert(elevation==1.05, 'readstepnc_single: elevation')</span>
+<span class="lineNum">     201 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     202 </span><span class="lineCov">          1 :   tests(n) = assert(ff(3)==20.5000000, 'readstepnc_single: array value')</span>
+<span class="lineNum">     203 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     204 </span><span class="lineCov">          1 :   tests(n) = assert((ff(1)-ff(10))==1.50000000, 'readstepnc_single: array value difference')</span>
+<span class="lineNum">     205 </span><span class="lineCov">          1 :   n=n+1</span>
+<span class="lineNum">     206 </span><span class="lineCov">          1 : end subroutine test_readstepnc_single</span>
+<span class="lineNum">     207 </span>            : 
+<span class="lineNum">     208 </span>            : 
+<span class="lineNum">     209 </span>            : end module convert_littler_tests
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

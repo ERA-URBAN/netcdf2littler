@@ -1,0 +1,1 @@
+/usr/bin/f95     CMakeFiles/convert-littler.dir/check_status.f90.o CMakeFiles/convert-littler.dir/convert_littler.f90.o CMakeFiles/convert-littler.dir/logging.f90.o CMakeFiles/convert-littler.dir/readncdf.f90.o CMakeFiles/convert-littler.dir/write_littler.f90.o  -o convert-littler  ../f_udunits_2/libf_udunits_2.a /usr/lib64/libudunits2.so /usr/lib64/libnetcdff.so 

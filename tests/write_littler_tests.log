@@ -1,0 +1,10 @@
+08/03/2016;10:49:49  DEBUG    Entering function dateint
+08/03/2016;10:49:49  DEBUG    Leaving function dateint
+08/03/2016;10:49:49  DEBUG    Entering subroutine get_default_littler
+08/03/2016;10:49:49  DEBUG    Leaving subroutine get_default_littler
+08/03/2016;10:49:49  DEBUG    Entering subroutine readtimedim
+08/03/2016;10:49:49  DEBUG    Leaving subroutine readtimedim
+08/03/2016;10:49:49  DEBUG    Entering subroutine readtimedim
+08/03/2016;10:49:49  DEBUG    Leaving subroutine readtimedim
+08/03/2016;10:49:49  DEBUG    Entering subroutine readstepnc_single
+08/03/2016;10:49:49  DEBUG    Leaving subroutine readstepnc_single

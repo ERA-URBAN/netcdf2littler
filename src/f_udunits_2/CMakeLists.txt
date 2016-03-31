@@ -1,0 +1,3 @@
+# f_udunits_2 library
+SET(FUDUNITS2_src ${SRCFUDUNITS2}/f_udunits_2.f90)
+ADD_LIBRARY(${FUDUNITS2LIB} STATIC ${FUDUNITS2_src})
