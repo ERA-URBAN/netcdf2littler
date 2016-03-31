@@ -1,2 +1,0 @@
-/usr/bin/ar qc libf_udunits_2.a  CMakeFiles/f_udunits_2.dir/f_udunits_2.f90.o
-/usr/bin/ranlib libf_udunits_2.a
