@@ -1,8 +1,10 @@
 &GROUP_NAME
-  filename = 'all.nc'
+  filename = 'IZUIDHOL99.nc'
   outfile = 'results2.txt'
-  variable_name = 'temperature' 'humidity',
-  variable_mapping = 'temperature' 'humidity'
-  devices = 20
-  dimensions = 2
+  variable_name = 'TemperatureC',
+  variable_mapping = 'temperature'
+  devices = 1
+  dimensions = 1
+  startdate = 20140716
+  enddate = 20140718
 /

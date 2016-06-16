@@ -6,7 +6,7 @@ module readncdf
  
   contains
 
-subroutine readstepnc(fname,var_name,ff, fill_value, lon, lat,elevation, device)
+subroutine readstepnc(fname,var_name,ff, fill_value, lon, lat,elevation, device, startindex, countnum)
   ! A condensed way to read a variable form  netcdf file
   ! it is implied that the format is ff(time, device)
   ! in:  - fname: netcdf filename
@@ -21,7 +21,7 @@ subroutine readstepnc(fname,var_name,ff, fill_value, lon, lat,elevation, device)
   character(len=*),intent(in) :: fname, var_name
   real,dimension(:),intent(out) :: ff
   real,intent(out) :: lon, lat, elevation, fill_value
-  integer, intent(in) :: device
+  integer, intent(in) :: device, startindex, countnum
   ! declare local variables
   integer :: nc_id,var_id,ndim,nvar,nattr,unlim_id,fmt, &
              ii,status,lo,la,le,ld,ti,lh, dlength, charset, &
@@ -81,11 +81,11 @@ subroutine readstepnc(fname,var_name,ff, fill_value, lon, lat,elevation, device)
     end select
   end do
   ! allocate the matrix for reading data. The definition is
-  allocate(var_dummy(ti))
+  allocate(var_dummy(countnum))
   ! Read all data
   call check(nf90_inq_varid(nc_id,trim(var_name),var_id))
   call check(nf90_get_var(nc_id,var_id,var_dummy, &
-             start=(/device,1/), count=(/1,ti/)))
+             start=(/device,startindex/), count=(/1,countnum/)))
   ! asking if there are the scale_factor and add_offset attributes
   status = nf90_get_att(nc_id,var_id,"scale_factor",sf)
   if (status == -43) sf=1.0
@@ -99,7 +99,7 @@ subroutine readstepnc(fname,var_name,ff, fill_value, lon, lat,elevation, device)
 end subroutine readstepnc
 
 
-subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation)
+subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation, startindex, countnum)
   ! A condensed way to read a variable form  netcdf file
   ! it is implied that the format is ff(time, device)
   ! in:  - fname: netcdf filename
@@ -122,6 +122,7 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation)
   character(len=100) :: timeunits
   real,dimension(:), allocatable:: var_dummy
   real :: sf,ofs
+  integer, intent(in) :: startindex, countnum
   real(c_double) :: second, tt, resolution, converted_time
   type(cv_converter_ptr) :: time_cvt0, time_cvt
   type(ut_system_ptr) :: sys
@@ -172,12 +173,12 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation)
     elevation = -888888
   end if
   ! allocate the matrix for reading data. The definition is
-  allocate(var_dummy(ti))
+  allocate(var_dummy(countnum))
   ! Read all data
   call check(nf90_inq_varid(nc_id,trim(var_name),var_id))
-  call check(nf90_get_var(nc_id,var_id,var_dummy, &
-             count=(/ti/)))
 
+  call check(nf90_get_var(nc_id,var_id,var_dummy, start=(/startindex/), &
+             count=(/countnum/)))
   ! asking if there are the scale_factor and add_offset attributes
   status = nf90_get_att(nc_id,var_id,"scale_factor",sf)
   if (status == -43) sf=1.0
@@ -253,7 +254,7 @@ end subroutine readtimedim
 
 subroutine read_variables(lat, lon, elevation, humidity, height, speed, temperature, dew_point, &
       pressure, psfc, refpres, direction, thickness, uwind, vwind, variable_name, &
-      variable_mapping, filename, fill_value, idx, device, dimensions)
+      variable_mapping, filename, fill_value, idx, device, dimensions, startindex, countnum)
   !
   ! description
   !
@@ -265,7 +266,7 @@ subroutine read_variables(lat, lon, elevation, humidity, height, speed, temperat
   character(len=14), dimension(:), allocatable :: time_littler
   real,dimension(:), allocatable    :: time
   character(len=100) :: timeunits
-  integer, intent(in) :: idx
+  integer, intent(in) :: idx, startindex, countnum
   integer, intent(in) :: device
   character(len=30), dimension(:), intent(in):: variable_name
   character(len=30), dimension(:), intent(in):: variable_mapping
@@ -280,73 +281,73 @@ subroutine read_variables(lat, lon, elevation, humidity, height, speed, temperat
     select case (trim(variable_mapping(idx)))
     case ('temperature')
       CALL readstepnc_single (filename, trim(variable_name(idx)), &
-          temperature, fill_value, lon, lat, elevation)
+          temperature, fill_value, lon, lat, elevation, startindex, countnum)
       case ('humidity')
         CALL readstepnc_single (filename, variable_name(idx), humidity, &
-          fill_value, lon, lat, elevation)
+          fill_value, lon, lat, elevation, startindex, countnum)
       case ('speed')
         CALL readstepnc_single (filename, variable_name(idx), speed, &
-          fill_value, lon, lat, elevation)
+          fill_value, lon, lat, elevation, startindex, countnum)
       case ('pressure')
         CALL readstepnc_single (filename, variable_name(idx), pressure, &
-          fill_value, lon, lat, elevation)
+          fill_value, lon, lat, elevation, startindex, countnum)
       case ('direction')
         CALL readstepnc_single (filename, variable_name(idx), direction, &
-          fill_value, lon, lat, elevation)
+          fill_value, lon, lat, elevation, startindex, countnum)
       case ('uwind')
         CALL readstepnc_single (filename, variable_name(idx), uwind, &
-          fill_value, lon, lat, elevation)
+          fill_value, lon, lat, elevation, startindex, countnum)
       case ('vwind')
         CALL readstepnc_single (filename, variable_name(idx), vwind, &
-          fill_value, lon, lat, elevation)
+          fill_value, lon, lat, elevation, startindex, countnum)
       case ('height')
         CALL readstepnc_single (filename, variable_name(idx), height, &
-          fill_value, lon, lat, elevation)
+          fill_value, lon, lat, elevation, startindex, countnum)
       case ('dew_point')
         CALL readstepnc_single (filename, variable_name(idx), dew_point, &
-          fill_value, lon, lat, elevation)
+          fill_value, lon, lat, elevation, startindex, countnum)
       case ('psfc')
         CALL readstepnc_single (filename, variable_name(idx), psfc, &
-          fill_value, lon, lat, elevation)
+          fill_value, lon, lat, elevation, startindex, countnum)
       case ('refpres')
         CALL readstepnc_single (filename, variable_name(idx), refpres, &
-          fill_value, lon, lat, elevation)
+          fill_value, lon, lat, elevation, startindex, countnum)
     end select
   case (2)  ! dimensions ==2
     select case (trim(variable_mapping(idx)))
     case ('temperature')
       CALL readstepnc (filename, trim(variable_name(idx)), &
-        temperature, fill_value, lon, lat, elevation, device)
+        temperature, fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('humidity')
         CALL readstepnc (filename, variable_name(idx), humidity, &
-          fill_value, lon, lat, elevation, device)
+          fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('speed')
         CALL readstepnc (filename, variable_name(idx), speed, &
-          fill_value, lon, lat, elevation, device)
+          fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('pressure')
         CALL readstepnc (filename, variable_name(idx), pressure, &
-          fill_value, lon, lat, elevation, device)
+          fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('direction')
         CALL readstepnc (filename, variable_name(idx), direction, &
-          fill_value, lon, lat, elevation, device)
+          fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('uwind')
         CALL readstepnc (filename, variable_name(idx), uwind, &
-          fill_value, lon, lat, elevation, device)
+          fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('vwind')
         CALL readstepnc (filename, variable_name(idx), vwind, &
-          fill_value, lon, lat, elevation, device)
+          fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('height')
         CALL readstepnc (filename, variable_name(idx), height, &
-          fill_value, lon, lat, elevation, device)
+          fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('dew_point')
         CALL readstepnc (filename, variable_name(idx), dew_point, &
-          fill_value, lon, lat, elevation, device)
+          fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('psfc')
         CALL readstepnc (filename, variable_name(idx), psfc, &
-          fill_value, lon, lat, elevation, device)
+          fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('refpres')
         CALL readstepnc (filename, variable_name(idx), refpres, &
-          fill_value, lon, lat, elevation, device)
+          fill_value, lon, lat, elevation, device, startindex, countnum)
     end select
   case DEFAULT
     STOP 'Dimensions should be either 1 or 2'

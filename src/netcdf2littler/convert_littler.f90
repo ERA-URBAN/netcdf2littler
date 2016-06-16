@@ -62,15 +62,17 @@ REAL :: lon, lat
 real :: elevation
 character(len=30), dimension(99):: variable_name = 'not defined'
 character(len=30), dimension(99):: variable_mapping = 'not defined'
+character(len=8):: startdate, enddate
 character(len=30):: filename, outfile
 integer :: devices, dimensions
 real :: fill_value
 character(19) :: datetime
 integer :: i, number_of_variables = 0
+integer :: startindex, countnum
 
 ! get filename, variable_names and variable_mappings from namelist
 namelist /group_name/ filename, variable_name, variable_mapping, devices, &
-    outfile, dimensions
+    outfile, dimensions, startdate, enddate
   open(10,file='./input.namelist')
   read(10,group_name)
   close(10)
@@ -105,49 +107,47 @@ call readtimedim(filename, time, timeunits)
 timeLength = size(time)
 allocate(time_littler(timeLength))
 call log_message('INFO', 'Converting time to little_R date format')
-call time_to_littler_date(time, timeunits, time_littler)
-
+call time_to_littler_date(time, timeunits, time_littler, startindex, countnum, startdate, enddate)
 ! loop over all devices
 do device=1,devices
   call log_message('INFO', concat_str_int('Processing devices, device: ', &
     device))
   ! read variable
   if (allocated(temperature)) deallocate(temperature)
-  allocate(temperature(timeLength))
+  allocate(temperature(countnum))
   if (allocated(humidity)) deallocate(humidity)
-  allocate(humidity(timeLength))
+  allocate(humidity(countnum))
   if (allocated(height)) deallocate(height)
-  allocate(height(timeLength))
+  allocate(height(countnum))
   if (allocated(speed)) deallocate(speed)
-  allocate(speed(timeLength))
+  allocate(speed(countnum))
   if (allocated(dew_point)) deallocate(dew_point)
-  allocate(dew_point(timeLength))
+  allocate(dew_point(countnum))
   if (allocated(pressure)) deallocate(pressure)
-  allocate(pressure(timeLength))
+  allocate(pressure(countnum))
   if (allocated(psfc)) deallocate(psfc)
-  allocate(psfc(timeLength))
+  allocate(psfc(countnum))
   if (allocated(refpres)) deallocate(refpres)
-  allocate(refpres(timeLength))
+  allocate(refpres(countnum))
   if (allocated(direction)) deallocate(direction)
-  allocate(direction(timeLength))
+  allocate(direction(countnum))
   if (allocated(thickness)) deallocate(thickness)
-  allocate(thickness(timeLength))
+  allocate(thickness(countnum))
   if (allocated(uwind)) deallocate(uwind)
-  allocate(uwind(timeLength))
+  allocate(uwind(countnum))
   if (allocated(vwind)) deallocate(vwind)
-  allocate(vwind(timeLength))
-  
+  allocate(vwind(countnum))
   do idx=1,number_of_variables
     ! read specified variables from netCDF file
     call read_variables(lat, lon, elevation, humidity, height, speed, temperature, dew_point, &
       pressure, psfc,refpres, direction, thickness, uwind, vwind, variable_name, &
-      variable_mapping, filename, fill_value, idx, device, dimensions)
+      variable_mapping, filename, fill_value, idx, device, dimensions, startindex, countnum)
     end do
   ! write obs to file in LITTLE_R format
   call write_obs_littler(pressure,height,temperature,dew_point,speed, &
   direction,uwind,vwind,humidity,thickness,psfc,refpres, p_qc,z_qc,t_qc,td_qc,spd_qc, &
   dir_qc,u_qc,v_qc,rh_qc,thick_qc,elevation,lat,lon,variable_mapping, &
-  kx, bogus, iseq_num, time_littler, fill_value, outfile )
+  kx, bogus, iseq_num, time_littler(startindex:startindex+countnum), fill_value, outfile )
 end do
 stop 99999
 end

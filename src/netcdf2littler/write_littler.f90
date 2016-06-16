@@ -124,16 +124,24 @@ subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
 end subroutine get_default_littler
 
 
-subroutine time_to_littler_date(time, timeunits, time_littler)
+subroutine time_to_littler_date(time, timeunits, time_littler, startindex, &
+  countnum, startdate, enddate)
   ! convert time to LITTLE_R time format
   ! in:   - time: time array
   !       - timeunits: units of time of time array
+  !       - startdate,enddate: string in form YYYY-MM-DD
   ! out:  - time_littler: time in LITTLE_R format
+  !       - startindex: index of startdate
+  !       - countnum: number of timesteps between startdate and enddate
   use f_udunits_2
   real(c_double) :: tt
   real,dimension(:),intent(in) :: time
   character(len=100), intent(in) :: timeunits
+  character(len=8), intent(in) :: startdate, enddate
   character(len=14), dimension(:), intent(out) :: time_littler
+  integer, dimension(:), allocatable :: time_littler_int
+  integer, intent(out) :: startindex, countnum
+  integer :: endindex
   real(c_double) :: resolution
   type(cv_converter_ptr) :: time_cvt0, time_cvt
   type(ut_system_ptr) :: sys
@@ -143,7 +151,7 @@ subroutine time_to_littler_date(time, timeunits, time_littler)
   real(c_double) :: second, converted_time
   real *8, parameter :: ZERO = 0.0
   character(len=99) :: char_a,char_b,char_c,char_d,char_e,char_f
-  integer :: ii
+  integer :: ii, ss
 
   call log_message('DEBUG', 'Entering subroutine time_to_littler_date')
 
@@ -156,16 +164,21 @@ subroutine time_to_littler_date(time, timeunits, time_littler)
   year=0 ; month=0; day=0 ; hour=0 ; minute=0 ; second=0.0
   resolution = -999.999
   ! loop over all timesteps
+  allocate (time_littler_int(size(time)))
   do ii=1,size(time)
     tt = time(ii)
     converted_time = f_cv_convert_double(time_cvt0,tt)
     call f_ut_decode_time(converted_time,year,month,day,hour,minute, &
                           second, resolution)
     time_littler(ii) = dateint(year,month,day,hour,minute,int(second))
+    time_littler_int(ii) = str2num(time_littler(ii))
   end do
-
+  ! calculate startindex and endindex
+  startindex = minloc(time_littler_int, dim=1, mask=(time_littler_int>=str2num(startdate)))
+  endindex = maxloc(time_littler_int, dim=1, mask=(time_littler_int<=str2num(enddate)))
+  ! calculate countnum
+  countnum = endindex - startindex + 1
   call log_message('DEBUG', 'Leaving subroutine time_to_littler_date')
-
 end subroutine time_to_littler_date
 
 
@@ -191,10 +204,19 @@ character(len=14) function dateint(year,month,day,hour,minute,second)
     trim(adjustl(char_e))//trim(adjustl(char_f))
 
   call log_message('DEBUG', 'Leaving function dateint')
-
   return
 end function dateint
 
+
+integer function str2num(str)
+  ! convert string to integer
+  character(len=8), intent(in) :: str
+  read (str, '(g12.5)') str2num
+  call log_message('DEBUG', 'Leaving function str2num')
+  return
+end function str2num
+  
+  
 subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
   direction,uwind,vwind,humidity,thickness,psfc,refpres, &
   p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
@@ -220,7 +242,7 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
   logical bogus
   integer :: idx
   integer, intent(in) :: iseq_num
-  character(len=14), dimension(:), allocatable, intent(in) :: time_littler
+  character(len=14), dimension(:), intent(in) :: time_littler
   REAL,DIMENSION(:), intent(in) :: humidity, height, speed
   REAL,DIMENSION(:), intent(in) :: temperature, dew_point, psfc
   REAL,DIMENSION(:), intent(in) :: pressure, direction, thickness
