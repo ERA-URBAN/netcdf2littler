@@ -274,8 +274,8 @@ subroutine read_variables(lat, lon, elevation, humidity, height, speed, temperat
   character(len=30), intent(in) :: filename
   real, intent(out) :: fill_value
   integer, intent(in) :: dimensions
-
   call log_message('DEBUG', 'Entering subroutine read_variables')
+  ! Reading variables
   call log_message('INFO', 'Reading variable: '//variable_name(idx))
   select case (dimensions)
   case (1)  ! dimensions==1

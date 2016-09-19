@@ -78,6 +78,9 @@ character(99) :: infile, name
 namelist /group_name/ filename, variable_name, variable_mapping, devices, &
     outfile, dimensions, startdate, enddate
 
+! define logging file
+call define_logfile('convert_littler.log')
+
 !Check if any arguments are found
 narg=command_argument_count()
 !Loop over the arguments
@@ -94,13 +97,11 @@ if(narg>0) then
         infile=adjustl(name) !assign a value to infile
         inquire(file=infile, exist=fileExist) !check if the file exists
         if(.not.fileExist) then
-          write(*,*)'file ', infile, ' not found'
-          stop
+          call log_message('CRITICAL', 'File not found: '//infile)
         endif
         LookForFile=.FALSE. !put the logical variable to its initial value
       else
-        write(*,*)"Option ", adjustl(name), "unknown"
-        stop
+        call log_message('ERROR', "Option "// trim(name)// " unknown")
       endif
     end select
   end do
@@ -119,9 +120,6 @@ open(10,file=infile)
 read(10,group_name)
 close(10)
 
-! define logging file
-call define_logfile('convert_littler.log')
-
 call log_message('INFO', 'Parsing namelist finished.')
 
 ! find number of variables in namelist
@@ -138,8 +136,12 @@ if (.not. ((dimensions==1 .AND. devices==1) .or. &
   (dimensions==2 .AND. devices>=1))) then
   call log_message('ERROR', 'Error in namelist specification of &
     & dimensions and devices.')
-  STOP 'Error in namelist specification of dimensions and devices'
 end if
+
+inquire(file=filename, exist=fileExist) !check if the netcdf exists
+if(.not.fileExist) then
+  call log_message('CRITICAL', 'File not found: '//filename)
+endif
 
 call current_datetime(datetime)
 ! get time and time units

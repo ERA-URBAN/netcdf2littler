@@ -31,6 +31,10 @@ implicit none
     character(19) :: datetime
     call current_datetime(datetime)
     write(99, '(A, T22, A,T31,A)') datetime, logtype, logmessage
+    if (logtype=='CRITICAL' .OR. logtype=='ERROR') then
+      write(6, *) logmessage
+      stop
+    end if
   end subroutine log_message
 
 
