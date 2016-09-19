@@ -75,7 +75,7 @@ subroutine main
   logical,dimension(:),allocatable :: tests  ! logical array with test results
   INTEGER :: ntests  ! total number of tests
   INTEGER :: n = 1  ! test counter
-  ntests = 33  ! modify if adding new tests
+  ntests = 34  ! modify if adding new tests
   call define_logfile('write_littler_tests.log')
   call initialize_tests(tests,ntests)
   call test_dateint(tests, n)
@@ -196,8 +196,10 @@ subroutine test_readstepnc_single(tests, n)
   logical, dimension(*), intent(inout) :: tests
   real, dimension(10) :: ff
   real :: lon, lat, elevation, fill_value
+  integer :: startindex = 1
+  integer :: countnum = 10
   call readstepnc_single('../test_data/test_1d.nc','temperature', ff, &
-    fill_value, lon, lat, elevation)
+    fill_value, lon, lat, elevation, startindex, countnum)
   tests(n) = assert(lon==4.88883305, 'readstepnc_single: longitude')
   n=n+1
   tests(n) = assert(lat==52.3687325, 'readstepnc_single: latitude')
@@ -207,7 +209,6 @@ subroutine test_readstepnc_single(tests, n)
   tests(n) = assert(ff(3)==20.5000000, 'readstepnc_single: array value')
   n=n+1
   tests(n) = assert((ff(1)-ff(10))==1.50000000, 'readstepnc_single: array value difference')
-  n=n+1
 end subroutine test_readstepnc_single
 
 

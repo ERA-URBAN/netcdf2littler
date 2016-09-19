@@ -39,18 +39,24 @@ INCLUDE(${CMAKE_MODULE_PATH}/FindUdunits2.cmake)
 
 # Define the executable name
 SET(NETCDF2LITTLEREXE convert-littler)
+SET(NETCDF2LITTLERTESTSEXE convert-littler-tests)
 
 # Define the library name
 SET(FUDUNITS2LIB f_udunits_2)
+SET(netcdf2littlerLIB netcdf2littler)
 
 # Define some directories
 SET(SRC ${CMAKE_SOURCE_DIR}/src)
 SET(FUDUNITS2_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/src/f_udunits_2)
 SET(SRCNETCDF2LITTLER ${SRC}/netcdf2littler)
 SET(SRCFUDUNITS2 ${SRC}/f_udunits_2)
+SET(SRCNETCDF2LITTLERTESTS ${CMAKE_SOURCE_DIR}/tests)
 
 # The source for the f_udunits_2 library
 ADD_SUBDIRECTORY(${SRCFUDUNITS2})
 
 # The source for the netcdf2littler binary
 ADD_SUBDIRECTORY(${SRCNETCDF2LITTLER})
+
+# The source for the netcdf2littler binary
+ADD_SUBDIRECTORY(${SRCNETCDF2LITTLERTESTS})

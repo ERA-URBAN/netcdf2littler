@@ -240,6 +240,7 @@ subroutine readtimedim(fname, time, timeunits)
     select case (trim(varname))
       case ('time','Time','TIME')
         ! allocate dimensions time axis
+        if (allocated(time)) deallocate(time)
         allocate(time(ti))
         !allocate(time_littler(ti))
         ! get time/timeunits from netcdf
