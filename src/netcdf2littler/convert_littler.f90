@@ -69,13 +69,55 @@ real :: fill_value
 character(19) :: datetime
 integer :: i, number_of_variables = 0
 integer :: startindex, countnum
+logical::lookForFile=.FALSE.
+integer::narg,cptArg
+logical::fileExist
+character(99) :: infile, name
 
 ! get filename, variable_names and variable_mappings from namelist
 namelist /group_name/ filename, variable_name, variable_mapping, devices, &
     outfile, dimensions, startdate, enddate
-  open(10,file='./input.namelist')
-  read(10,group_name)
-  close(10)
+
+!Check if any arguments are found
+narg=command_argument_count()
+!Loop over the arguments
+if(narg>0) then
+  do cptArg=1, narg
+    call get_command_argument(cptArg, name)
+    select case(adjustl(name))
+    !First known args
+      case("--namelist")
+      lookForFile=.TRUE. !change logical value
+      case default
+      !Treat the second arg of a serie
+      if(LookForFile) then
+        infile=adjustl(name) !assign a value to infile
+        inquire(file=infile, exist=fileExist) !check if the file exists
+        if(.not.fileExist) then
+          write(*,*)'file ', infile, ' not found'
+          stop
+        endif
+        LookForFile=.FALSE. !put the logical variable to its initial value
+      else
+        write(*,*)"Option ", adjustl(name), "unknown"
+        stop
+      endif
+    end select
+  end do
+else
+  ! set a default namelist name
+  infile = './input.namelist'
+  inquire(file=infile,exist=fileExist)!check if it exist
+  if(.not.fileExist)then
+    write(*,*)'file ',infile,' not found'
+    stop
+  endif
+endif
+
+! read the namelist (either cli supplied or default
+open(10,file=infile)
+read(10,group_name)
+close(10)
 
 ! define logging file
 call define_logfile('convert_littler.log')
