@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rvanharen/netcdf2littler.svg?branch=master)](https://travis-ci.org/rvanharen/netcdf2littler)
+
 # NetCDF2LittleR
 
 ### Description
