@@ -1,0 +1,6 @@
+language: fortran
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y gfortran
+script:
+  - cmake . && make
