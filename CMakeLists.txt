@@ -2,6 +2,24 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.5)
 
+# Ensures that we do an out of source build
+
+MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD MSG)
+  STRING(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" insource)
+  GET_FILENAME_COMPONENT(PARENTDIR ${CMAKE_SOURCE_DIR} PATH)
+  STRING(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${PARENTDIR}" insourcesubdir)
+  IF(insource OR insourcesubdir)
+    IF(EXISTS ${CMAKE_SOURCE_DIR}/CMakeCache.txt OR EXISTS ${CMAKE_SOURCE_DIR}/CMakeFiles)
+      MESSAGE(FATAL_ERROR "Found results from an in-source build in your source directory.")
+    ENDIF()
+    MESSAGE(FATAL_ERROR "${MSG}")
+  ENDIF(insource OR insourcesubdir)
+ENDMACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
+
+MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
+    "${CMAKE_PROJECT_NAME} requires an out of source build."
+)
+
 PROJECT(NETCDF2LITTLER Fortran)
 
 # Set the NETCDF2LITTLER version
@@ -9,6 +27,12 @@ SET(VERSION alpha)
 
 # Add local modules to the module path
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+SET(LIBRARY_OUTPUT_PATH  ${NETCDF2LITTLER_BINARY_DIR}/lib CACHE PATH "Single directory for all libraries." )
+SET( EXECUTABLE_OUTPUT_PATH ${NETCDF2LITTLER_BINARY_DIR}/bin CACHE PATH "Single directory for all executables." )
+MARK_AS_ADVANCED( EXECUTABLE_OUTPUT_PATH )
+MARK_AS_ADVANCED( LIBRARY_OUTPUT_PATH )
+
 
 # check if fortran compiler supports fortran90
 IF(NOT CMAKE_Fortran_COMPILER_SUPPORTS_F90)
