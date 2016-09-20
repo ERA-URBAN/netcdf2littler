@@ -2,5 +2,7 @@ language: fortran
 install:
   - sudo apt-get update -qq
   - sudo apt-get install -y gfortran
+  - sudo apt-get install -y udunits
+  - sudo apt-get install -y netcdf-fortran
 script:
   - mkdir build && cd build && cmake .. && make
