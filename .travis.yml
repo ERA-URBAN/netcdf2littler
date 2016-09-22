@@ -6,6 +6,7 @@ install:
   - sudo apt-get install -y libudunits2-dev
   - sudo apt-get install -y libnetcdff5
   - sudo apt-get install -y libnetcdf-dev
+  - sudo apt-get install -y lcov
 script:
   - mkdir build && cd build && cmake -DENABLE_COVERAGE=On .. && make && make test
 after_success:
