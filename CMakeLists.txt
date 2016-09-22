@@ -87,7 +87,7 @@ if (ENABLE_COVERAGE)
   find_package(codecov)
   enable_testing()
   # The source for the netcdf2littler binary
-  ADD_SUBDIRECTORY(${SRCNETCDF2LITTLERTESTS} EXCLUDE_FROM_ALL EXCLUDE_FROM_DEFAULT_BUILD)
+  ADD_SUBDIRECTORY(${SRCNETCDF2LITTLERTESTS})
   # symlink the test_data into the build directory
   EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/test_data
                                                                  ${CMAKE_BINARY_DIR}/test_data)
