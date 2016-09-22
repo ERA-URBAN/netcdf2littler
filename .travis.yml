@@ -10,7 +10,7 @@ install:
 addons:
   apt:
     sources:
-      - george-edison55-precise-backports
+      - george-edison55/cmake-3.x
     packages:
       - cmake
       - cmake-data
