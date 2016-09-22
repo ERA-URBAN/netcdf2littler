@@ -5,6 +5,10 @@ before install:
   - sudo apt-get install cmake -y
   - sudo apt-get install cmake-date -y 
 install:
+  - sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
+  - sudo apt-get update -q
+  - sudo apt-get install cmake -y
+  - sudo apt-get install cmake-date -y
   - sudo apt-get update -qq
   - sudo apt-get install -y gfortran
   - sudo apt-get install -y libudunits2-0
