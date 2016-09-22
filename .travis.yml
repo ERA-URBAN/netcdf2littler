@@ -10,7 +10,7 @@ install:
 addons:
   apt:
     sources:
-      - ppa:george-edison55/cmake-3.x
+        - sourceline: 'ppa:george-edison55/cmake-3.x'
     packages:
       - cmake
       - cmake-data
