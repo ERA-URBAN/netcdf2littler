@@ -10,7 +10,7 @@ install:
 addons:
   apt:
     sources:
-        - sourceline: 'ppa:george-edison55/cmake-3.x'
+        - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
     packages:
       - cmake
       - cmake-data
