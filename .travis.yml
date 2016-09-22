@@ -8,6 +8,6 @@ install:
   - sudo apt-get install -y libnetcdf-dev
   - sudo apt-get install -y lcov
 script:
-  - mkdir build && cd build && cmake -DENABLE_COVERAGE=On .. && make && make test
+  - mkdir build && cd build && FC=gfortran cmake -DENABLE_COVERAGE=On .. && make && make test
 after_success:
   - bash <(curl -s https://codecov.io/bash)
