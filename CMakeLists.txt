@@ -33,7 +33,6 @@ SET( EXECUTABLE_OUTPUT_PATH ${NETCDF2LITTLER_BINARY_DIR}/bin CACHE PATH "Single 
 MARK_AS_ADVANCED( EXECUTABLE_OUTPUT_PATH )
 MARK_AS_ADVANCED( LIBRARY_OUTPUT_PATH )
 
-
 # check if fortran compiler supports fortran90
 IF(NOT CMAKE_Fortran_COMPILER_SUPPORTS_F90)
     MESSAGE(FATAL_ERROR "Fortran compiler does not support F90")
@@ -63,7 +62,6 @@ INCLUDE(${CMAKE_MODULE_PATH}/FindUdunits2.cmake)
 
 # Define the executable name
 SET(NETCDF2LITTLEREXE convert-littler)
-SET(NETCDF2LITTLERTESTSEXE convert-littler-tests)
 
 # Define the library name
 SET(FUDUNITS2LIB f_udunits_2)
@@ -74,7 +72,6 @@ SET(SRC ${CMAKE_SOURCE_DIR}/src)
 SET(FUDUNITS2_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/src/f_udunits_2)
 SET(SRCNETCDF2LITTLER ${SRC}/netcdf2littler)
 SET(SRCFUDUNITS2 ${SRC}/f_udunits_2)
-SET(SRCNETCDF2LITTLERTESTS ${CMAKE_SOURCE_DIR}/tests)
 
 # The source for the f_udunits_2 library
 ADD_SUBDIRECTORY(${SRCFUDUNITS2})
@@ -82,5 +79,18 @@ ADD_SUBDIRECTORY(${SRCFUDUNITS2})
 # The source for the netcdf2littler binary
 ADD_SUBDIRECTORY(${SRCNETCDF2LITTLER})
 
-# The source for the netcdf2littler binary
-ADD_SUBDIRECTORY(${SRCNETCDF2LITTLERTESTS})
+# only build tests if -DBUILD_TESTS=True
+if (ENABLE_COVERAGE)
+  SET(NETCDF2LITTLERTESTSEXE convert-littler-tests)
+  SET(SRCNETCDF2LITTLERTESTS ${CMAKE_SOURCE_DIR}/tests)
+  # enable code coverage
+  find_package(codecov)
+  enable_testing()
+  # The source for the netcdf2littler binary
+  ADD_SUBDIRECTORY(${SRCNETCDF2LITTLERTESTS} EXCLUDE_FROM_ALL EXCLUDE_FROM_DEFAULT_BUILD)
+  # symlink the test_data into the build directory
+  EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/test_data
+                                                                 ${CMAKE_BINARY_DIR}/test_data)
+  # evaluate coverage
+  coverage_evaluate()
+ENDIF()

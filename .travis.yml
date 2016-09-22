@@ -7,4 +7,6 @@ install:
   - sudo apt-get install -y libnetcdff5
   - sudo apt-get install -y libnetcdf-dev
 script:
-  - mkdir build && cd build && cmake .. && make
+  - mkdir build && cd build && cmake -DENABLE_COVERAGE=On .. && make && make test
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

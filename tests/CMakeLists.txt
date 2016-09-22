@@ -3,6 +3,7 @@
 ########################################
 
 # Add the source files
+enable_testing()
 SET(NETCDF2LITTLERTESTS_src
                        ${SRCNETCDF2LITTLER}/check_status.f90
                        ${SRCNETCDF2LITTLER}/logging.f90
@@ -13,7 +14,9 @@ SET(NETCDF2LITTLERTESTS_src
 )
 
 ADD_EXECUTABLE(${NETCDF2LITTLERTESTSEXE} ${NETCDF2LITTLERTESTS_src})
-
+find_package(codecov)
+ADD_COVERAGE(${NETCDF2LITTLERTESTSEXE})
+add_test(test1 ${NETCDF2LITTLER_BINARY_DIR}/bin/${NETCDF2LITTLERTESTSEXE})
 #####################################################
 # Add the needed libraries and special compiler flags
 #####################################################
