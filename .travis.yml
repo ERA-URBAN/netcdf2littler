@@ -1,4 +1,9 @@
 language: fortran
+before install:
+  - sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
+  - sudo apt-et update -q
+  - sudo apt-get install cmake -y
+  - sudo apt-get install cmake-date -y 
 install:
   - sudo apt-get update -qq
   - sudo apt-get install -y gfortran
@@ -7,13 +12,6 @@ install:
   - sudo apt-get install -y libnetcdff5
   - sudo apt-get install -y libnetcdf-dev
   - sudo apt-get install -y lcov
-addons:
-  apt:
-    sources:
-        - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
-    packages:
-      - cmake
-      - cmake-data
 script:
   - mkdir build && cd build && FC=gfortran cmake -DENABLE_COVERAGE=On .. && make && make test
 after_success:
