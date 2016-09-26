@@ -7,12 +7,15 @@ install:
   - sudo apt-get install -y libnetcdff5
   - sudo apt-get install -y libnetcdf-dev
   - sudo apt-get install -y lcov
+  # Download a binary of cmake 3.x
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
   - |
     CMAKE_URL="http://www.cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz"
     mkdir cmake_bin && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake_bin
     export PATH=${DEPS_DIR}/cmake_bin/bin:${PATH}
+  # Go back to the Root directory  
+  - cd ..
 script:
   - cmake --version
   - mkdir build && cd build && FC=gfortran cmake -DENABLE_COVERAGE=On .. && make && make test
