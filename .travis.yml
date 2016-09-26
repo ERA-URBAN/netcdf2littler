@@ -12,6 +12,8 @@ install:
     mkdir cmake_bin && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake_bin
     export PATH=${DEPS_DIR}/cmake_bin/bin:${PATH}
 script:
-  - mkdir build && cd build && FC=gfortran cmake -DENABLE_COVERAGE=On .. && make && make test
+  - which cmake
+  - cmake --version
+  - mkdir build && cd build && FC=gfortran ${DEPS_DIR}/cmake/bin/cmake/cmake -DENABLE_COVERAGE=On .. && make && make test
 after_success:
   - bash <(curl -s https://codecov.io/bash)
