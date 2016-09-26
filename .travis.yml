@@ -9,8 +9,8 @@ install:
   - sudo apt-get install -y lcov
   - |
     CMAKE_URL="http://www.cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz"
-    mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
-    export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+    mkdir cmake_bin && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake_bin
+    export PATH=${DEPS_DIR}/cmake_bin/bin:${PATH}
 script:
   - mkdir build && cd build && FC=gfortran cmake -DENABLE_COVERAGE=On .. && make && make test
 after_success:
