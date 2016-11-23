@@ -10,7 +10,7 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick,rpressure, &
   p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
   slp , ter , xlat , xlon , timechar , kx , &
   string1 , string2 , string3 , string4 , bogus , iseq_num , &
-  iunit, outfile )
+  iunit, outfile, append )
   ! TODO: add fields in the header format as arguments
   ! write observations in LITTLE_R format for WRF data assimilation
   ! in: - data variables &* strings to write in LITTLE_R format
@@ -31,6 +31,7 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick,rpressure, &
   character *22  meas_format 
   character *14  end_format
   logical bogus
+  logical, intent(inout) :: append
   call log_message('DEBUG', 'Entering subroutine write_obs')
 
   rpt_format =  ' ( 2f20.5 , 2a40 , ' &
@@ -39,8 +40,12 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick,rpressure, &
   meas_format =  ' ( 10( f13.5 , i7 ) ) '
   end_format = ' ( 3 ( i7 ) ) ' 
 
-  ! output file
-  open (unit=iunit,file=outfile,action="write")
+  ! open output file and set append to true
+  if (append .eqv. .false.) then
+    open (unit=iunit,file=outfile,action="write")
+    append = .true.
+  end if
+
   ! write header record
   WRITE ( UNIT = iunit , ERR = 19 , FMT = rpt_format ) &
     xlat,xlon, string1 , string2 , &
@@ -52,7 +57,7 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick,rpressure, &
     -888888.,0, -888888.,0, -888888.,0, -888888.,0, &
     -888888.,0, &
     -888888.,0, -888888.,0 
-   
+
   do k = 1 , kx
     WRITE ( UNIT = iunit , ERR = 19 , FMT = meas_format ) &
                p(k), p_qc(k), ter+1.5, z_qc(k), t(k), t_qc(k), td(k), td_qc(k), &
@@ -221,10 +226,11 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
   direction,uwind,vwind,humidity,thickness,psfc,refpres, &
   p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
   ter , lat , lon , variable_mapping, kx, bogus, iseq_num, time_littler, &
-  fill_value, outfile )
+  fill_value, outfile, append )
   !
   ! description subroutine here
   !
+  logical, intent(inout) :: append
   integer, intent(in) :: kx
   real,dimension(kx) :: p,z,t,td,spd,dir,u,v,rh,thick,slp,rpressure
   integer,dimension(kx) :: p_qc,z_qc,t_qc,td_qc,spd_qc
@@ -323,7 +329,13 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
       slp = psfc(idx)
     else
       slp = dpsfc
-    end if   
+    end if
+    if (ANY(variable_mapping=="humidity" ) .AND. &
+      (psfc(idx) /= fill_value)) then
+      rh = drh(idx)
+    else
+      rh = drh
+    end if
     if (ANY(variable_mapping=="refpres" ) .AND. &
       (refpres(idx) /= fill_value)) then
       rpressure = refpres(idx)
@@ -348,7 +360,7 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
         'SURFACE DATA FROM ??????????? SOURCE    ', &
         'FM-12 SYNOP                             ', &
         '                                        ', &
-        bogus , iseq_num , 2, outfile )
+        bogus , iseq_num , 2, outfile, append )
     else ! vertical profile
       call write_obs(p,z,t,td,spd,dir,u,v,rh,thick,rpressure, &
         p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
@@ -357,7 +369,7 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
         'SOUNDINGS FROM ????????? SOURCE         ', &
         'FM-35 TEMP                              ', &
         '                                        ', &
-        bogus , iseq_num , 2, outfile )
+        bogus , iseq_num , 2, outfile, append )
     endif
   end do
 
