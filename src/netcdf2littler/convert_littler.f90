@@ -32,7 +32,7 @@ implicit none
 
 integer, parameter :: kx=1
 
-logical bogus
+logical bogus, append
 real :: ter
 integer :: idx
 data bogus /.false./
@@ -143,6 +143,9 @@ if(.not.fileExist) then
   call log_message('CRITICAL', 'File not found: '//filename)
 endif
 
+! Set initial value of append to false (create a new output file)
+append = .false.
+
 call current_datetime(datetime)
 ! get time and time units
 call log_message('INFO', 'Extracting time and &
@@ -191,7 +194,7 @@ do device=1,devices
   call write_obs_littler(pressure,height,temperature,dew_point,speed, &
   direction,uwind,vwind,humidity,thickness,psfc,refpres, p_qc,z_qc,t_qc,td_qc,spd_qc, &
   dir_qc,u_qc,v_qc,rh_qc,thick_qc,elevation,lat,lon,variable_mapping, &
-  kx, bogus, iseq_num, time_littler(startindex:startindex+countnum), fill_value, outfile )
+  kx, bogus, iseq_num, time_littler(startindex:startindex+countnum), fill_value, outfile, append )
 end do
 stop 99999
 end
