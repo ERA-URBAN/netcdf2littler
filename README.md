@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/rvanharen/netcdf2littler.svg?branch=master)](https://travis-ci.org/rvanharen/netcdf2littler) [![codecov](https://codecov.io/gh/rvanharen/netcdf2littler/branch/master/graph/badge.svg)](https://codecov.io/gh/rvanharen/netcdf2littler)
+[![Build Status](https://travis-ci.org/era-urban/netcdf2littler.svg?branch=master)](https://travis-ci.org/era-urban/netcdf2littler) [![codecov](https://codecov.io/gh/era-urban/netcdf2littler/branch/master/graph/badge.svg)](https://codecov.io/gh/era-urban/netcdf2littler)
 
 # NetCDF2LittleR
 
