@@ -117,7 +117,7 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
   ! declare local variables
   integer :: nc_id,var_id,ndim,nvar,nattr,unlim_id,fmt, &
              ii,status,lo,la,le,ld,lh, ti, dlength, charset, &
-             hour,minute,year,month,day
+             hour,minute,year,month,day, k, kx
   character(len=15) :: dname, varname
   character(len=100) :: timeunits
   real,dimension(:), allocatable:: var_dummy
@@ -175,19 +175,25 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
   ! allocate the matrix for reading data. The definition is
   allocate(var_dummy(countnum))
   ! Read all data
-  call check(nf90_inq_varid(nc_id,trim(var_name),var_id))
-
-  call check(nf90_get_var(nc_id,var_id,var_dummy, start=(/startindex/), &
-             count=(/countnum/)))
-  ! asking if there are the scale_factor and add_offset attributes
-  status = nf90_get_att(nc_id,var_id,"scale_factor",sf)
-  if (status == -43) sf=1.0
-  status = nf90_get_att(nc_id,var_id,"add_offset",ofs)
-  if (status == -43) ofs = 0.0
-  ! apply scale factor and offset
-  ff = sf*var_dummy+ofs
-  ! asking if there is a fill_value for the variable
-  status = nf90_get_att(nc_id,var_id,"_FillValue",fill_value)
+  status = nf90_inq_varid(nc_id,trim(var_name),var_id)
+  if (status /= nf90_NoErr) then
+    ! variable not found in netcdf file
+    do k=1,kx
+      ff(k) = -888888
+    end do
+  else
+    call check(nf90_get_var(nc_id,var_id,var_dummy, start=(/startindex/), &
+              count=(/countnum/)))
+    ! asking if there are the scale_factor and add_offset attributes
+    status = nf90_get_att(nc_id,var_id,"scale_factor",sf)
+    if (status == -43) sf=1.0
+    status = nf90_get_att(nc_id,var_id,"add_offset",ofs)
+    if (status == -43) ofs = 0.0
+    ! apply scale factor and offset
+    ff = sf*var_dummy+ofs
+    ! asking if there is a fill_value for the variable
+    status = nf90_get_att(nc_id,var_id,"_FillValue",fill_value)
+  end if
   ! close netcdf file
   call check(nf90_close(nc_id))
   deallocate(var_dummy)
@@ -271,7 +277,7 @@ subroutine read_variables(lat, lon, elevation, humidity, height, speed, temperat
   integer, intent(in) :: device
   character(len=30), dimension(:), intent(in):: variable_name
   character(len=30), dimension(:), intent(in):: variable_mapping
-  character(len=30), intent(in) :: filename
+  character(len=*), intent(in) :: filename
   real, intent(out) :: fill_value
   integer, intent(in) :: dimensions
   call log_message('DEBUG', 'Entering subroutine read_variables')
