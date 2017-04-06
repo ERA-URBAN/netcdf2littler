@@ -312,7 +312,7 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
     else
       v = dv
     end if
-    if (ANY(variable_mapping=="temperature" ) .AND. &
+    if (ANY(variable_mapping=="humidity" ) .AND. &
       (humidity(idx) /= fill_value)) then
       rh = humidity(idx)
     else
@@ -329,12 +329,6 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
       slp = psfc(idx)
     else
       slp = dpsfc
-    end if
-    if (ANY(variable_mapping=="humidity" ) .AND. &
-      (psfc(idx) /= fill_value)) then
-      rh = drh(idx)
-    else
-      rh = drh
     end if
     if (ANY(variable_mapping=="refpres" ) .AND. &
       (refpres(idx) /= fill_value)) then

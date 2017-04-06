@@ -112,15 +112,15 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
   use check_status
   ! declare calling variables
   character(len=*),intent(in) :: fname, var_name
-  real,dimension(:),intent(out) :: ff
+  real,dimension(countnum),intent(out) :: ff
   real,intent(out) :: lon, lat, elevation, fill_value
   ! declare local variables
   integer :: nc_id,var_id,ndim,nvar,nattr,unlim_id,fmt, &
              ii,status,lo,la,le,ld,lh, ti, dlength, charset, &
-             hour,minute,year,month,day, k, kx
+             hour,minute,year,month,day, k
   character(len=15) :: dname, varname
   character(len=100) :: timeunits
-  real,dimension(:), allocatable:: var_dummy
+  real,dimension(countnum):: var_dummy
   real :: sf,ofs
   integer, intent(in) :: startindex, countnum
   real(c_double) :: second, tt, resolution, converted_time
@@ -172,18 +172,16 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
   if (elevation < -100) then
     elevation = -888888
   end if
-  ! allocate the matrix for reading data. The definition is
-  allocate(var_dummy(countnum))
   ! Read all data
   status = nf90_inq_varid(nc_id,trim(var_name),var_id)
   if (status /= nf90_NoErr) then
     ! variable not found in netcdf file
-    do k=1,kx
+    do k=1,countnum
       ff(k) = -888888
     end do
   else
-    call check(nf90_get_var(nc_id,var_id,var_dummy, start=(/startindex/), &
-              count=(/countnum/)))
+    status = nf90_get_var(nc_id,var_id,var_dummy, start=(/startindex/), &
+              count=(/countnum/))
     ! asking if there are the scale_factor and add_offset attributes
     status = nf90_get_att(nc_id,var_id,"scale_factor",sf)
     if (status == -43) sf=1.0
@@ -194,9 +192,9 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
     ! asking if there is a fill_value for the variable
     status = nf90_get_att(nc_id,var_id,"_FillValue",fill_value)
   end if
+
   ! close netcdf file
   call check(nf90_close(nc_id))
-  deallocate(var_dummy)
   call log_message('DEBUG', 'Leaving subroutine readstepnc_single')
 end subroutine readstepnc_single
 
