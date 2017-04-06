@@ -63,7 +63,7 @@ real :: elevation
 character(len=30), dimension(99):: variable_name = 'not defined'
 character(len=30), dimension(99):: variable_mapping = 'not defined'
 character(len=8):: startdate, enddate
-character(len=30):: filename, outfile
+character(len=99):: filename, outfile
 integer :: devices, dimensions
 real :: fill_value
 character(19) :: datetime
@@ -154,7 +154,14 @@ call readtimedim(filename, time, timeunits)
 timeLength = size(time)
 allocate(time_littler(timeLength))
 call log_message('INFO', 'Converting time to little_R date format')
-call time_to_littler_date(time, timeunits, time_littler, startindex, countnum, startdate, enddate)
+call time_to_littler_date(time, timeunits, time_littler, startindex, &
+                          countnum, startdate, enddate)
+call log_message('INFO', concat_str_int('Number of timesteps found: ', &
+                 countnum))
+! Don't write anything if there are no timesteps in the file for our selection
+if (countnum==0) then
+  call log_message('ERROR', 'No timesteps found in file: '//filename)
+endif
 ! loop over all devices
 do device=1,devices
   call log_message('INFO', concat_str_int('Processing devices, device: ', &
