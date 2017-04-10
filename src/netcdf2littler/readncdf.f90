@@ -112,7 +112,8 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
   use check_status
   ! declare calling variables
   character(len=*),intent(in) :: fname, var_name
-  real,dimension(countnum),intent(out) :: ff
+  integer, intent(in) :: startindex, countnum
+  real,dimension(countnum), intent(out) :: ff
   real,intent(out) :: lon, lat, elevation, fill_value
   ! declare local variables
   integer :: nc_id,var_id,ndim,nvar,nattr,unlim_id,fmt, &
@@ -120,9 +121,8 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
              hour,minute,year,month,day, k
   character(len=15) :: dname, varname
   character(len=100) :: timeunits
-  real,dimension(countnum):: var_dummy
+  real,dimension(:), allocatable:: var_dummy
   real :: sf,ofs
-  integer, intent(in) :: startindex, countnum
   real(c_double) :: second, tt, resolution, converted_time
   type(cv_converter_ptr) :: time_cvt0, time_cvt
   type(ut_system_ptr) :: sys
@@ -131,6 +131,7 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
   real,dimension(:),allocatable :: time
   character(len=14),dimension(:),allocatable :: time_littler
   elevation = -888888
+  allocate(var_dummy(countnum))
   call log_message('DEBUG', 'Entering subroutine readstepnc_single')
   call check(nf90_open(fname,nf90_nowrite,nc_id))
   call check(nf90_inquire(nc_id,ndim,nvar))
@@ -196,6 +197,7 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
   ! close netcdf file
   call check(nf90_close(nc_id))
   call log_message('DEBUG', 'Leaving subroutine readstepnc_single')
+  deallocate(var_dummy)
 end subroutine readstepnc_single
 
 
