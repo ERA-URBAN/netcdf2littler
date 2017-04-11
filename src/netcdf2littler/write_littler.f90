@@ -273,23 +273,22 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
       (height(idx) /= fill_value)) then
       z = height(idx) ! either p or z must be defined
     else
-      ! z = dheight
-      z = 1.5  ! sea level pressure
+      z = dheight
     endif
     if (ANY(variable_mapping=="temperature" ) .AND. &
-      (temperature(idx) /= fill_value)) then
+    ((temperature(idx) /= fill_value) .OR. (temperature(idx) /= -888888))) then
       t = temperature(idx) + 273.15 ! convert to K
     else
       t = dtemperature
     end if
     if (ANY(variable_mapping=="dew_point" ) .AND. &
-      (dew_point(idx) /= fill_value)) then
+      ((dew_point(idx) /= fill_value) .OR. (dew_point(idx) /= -888888))) then
       td = (dew_point(idx)) + 273.15
     else
       td = ddew_point
     end if
     if (ANY(variable_mapping=="speed" ) .AND. &
-      (spd(idx) /= -fill_value)) then
+      (spd(idx) /= fill_value)) then
       spd = speed(idx)
     else
       spd = dspeed
