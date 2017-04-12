@@ -260,7 +260,7 @@ end subroutine readtimedim
 
 
 subroutine read_variables(lat, lon, elevation, humidity, height, speed, temperature, dew_point, &
-      pressure, psfc, refpres, direction, thickness, uwind, vwind, variable_name, &
+      pressure, refpres, direction, thickness, uwind, vwind, variable_name, &
       variable_mapping, filename, fill_value, idx, device, dimensions, startindex, countnum)
   !
   ! description
@@ -268,7 +268,7 @@ subroutine read_variables(lat, lon, elevation, humidity, height, speed, temperat
   REAL,DIMENSION(:), intent(inout) :: humidity, height, speed
   REAL,DIMENSION(:), intent(inout) :: temperature, dew_point
   REAL,DIMENSION(:), intent(inout) :: pressure, direction, thickness
-  REAL,DIMENSION(:), intent(inout) :: uwind, vwind, psfc, refpres
+  REAL,DIMENSION(:), intent(inout) :: uwind, vwind, refpres
   real, intent(out) :: lat, lon, elevation
   character(len=14), dimension(:), allocatable :: time_littler
   real,dimension(:), allocatable    :: time
@@ -313,9 +313,6 @@ subroutine read_variables(lat, lon, elevation, humidity, height, speed, temperat
       case ('dew_point')
         CALL readstepnc_single (filename, variable_name(idx), dew_point, &
           fill_value, lon, lat, elevation, startindex, countnum)
-      case ('psfc')
-        CALL readstepnc_single (filename, variable_name(idx), psfc, &
-          fill_value, lon, lat, elevation, startindex, countnum)
       case ('refpres')
         CALL readstepnc_single (filename, variable_name(idx), refpres, &
           fill_value, lon, lat, elevation, startindex, countnum)
@@ -348,9 +345,6 @@ subroutine read_variables(lat, lon, elevation, humidity, height, speed, temperat
           fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('dew_point')
         CALL readstepnc (filename, variable_name(idx), dew_point, &
-          fill_value, lon, lat, elevation, device, startindex, countnum)
-      case ('psfc')
-        CALL readstepnc (filename, variable_name(idx), psfc, &
           fill_value, lon, lat, elevation, device, startindex, countnum)
       case ('refpres')
         CALL readstepnc (filename, variable_name(idx), refpres, &

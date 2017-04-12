@@ -54,7 +54,7 @@ INTEGER :: timeLength, device
 REAL,DIMENSION(:), ALLOCATABLE :: humidity, height, speed
 REAL,DIMENSION(:), ALLOCATABLE :: temperature, dew_point
 REAL,DIMENSION(:), ALLOCATABLE :: pressure, direction, thickness
-REAL,DIMENSION(:), ALLOCATABLE :: uwind, vwind, psfc, refpres
+REAL,DIMENSION(:), ALLOCATABLE :: uwind, vwind, refpres
 character(len=14), dimension(:), allocatable :: time_littler
 real,dimension(:), allocatable    :: time
 character(len=100) :: timeunits
@@ -179,8 +179,6 @@ do device=1,devices
   allocate(dew_point(countnum))
   if (allocated(pressure)) deallocate(pressure)
   allocate(pressure(countnum))
-  if (allocated(psfc)) deallocate(psfc)
-  allocate(psfc(countnum))
   if (allocated(refpres)) deallocate(refpres)
   allocate(refpres(countnum))
   if (allocated(direction)) deallocate(direction)
@@ -194,12 +192,12 @@ do device=1,devices
   do idx=1,number_of_variables
     ! read specified variables from netCDF file
     call read_variables(lat, lon, elevation, humidity, height, speed, temperature, dew_point, &
-      pressure, psfc,refpres, direction, thickness, uwind, vwind, variable_name, &
+      pressure, refpres, direction, thickness, uwind, vwind, variable_name, &
       variable_mapping, filename, fill_value, idx, device, dimensions, startindex, countnum)
     end do
   ! write obs to file in LITTLE_R format
   call write_obs_littler(pressure,height,temperature,dew_point,speed, &
-  direction,uwind,vwind,humidity,thickness,psfc,refpres, p_qc,z_qc,t_qc,td_qc,spd_qc, &
+  direction,uwind,vwind,humidity,thickness,refpres, p_qc,z_qc,t_qc,td_qc,spd_qc, &
   dir_qc,u_qc,v_qc,rh_qc,thick_qc,elevation,lat,lon,variable_mapping, &
   kx, bogus, iseq_num, time_littler(startindex:startindex+countnum), fill_value, outfile, append )
 end do
