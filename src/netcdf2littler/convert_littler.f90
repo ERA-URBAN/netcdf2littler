@@ -199,7 +199,7 @@ do device=1,devices
   call write_obs_littler(pressure,height,temperature,dew_point,speed, &
   direction,uwind,vwind,humidity,thickness,refpres, p_qc,z_qc,t_qc,td_qc,spd_qc, &
   dir_qc,u_qc,v_qc,rh_qc,thick_qc,elevation,lat,lon,variable_mapping, &
-  kx, bogus, iseq_num, time_littler(startindex:startindex+countnum), fill_value, outfile, append )
+  kx, bogus, iseq_num, time_littler(startindex:startindex+countnum-1), fill_value, outfile, append )
 end do
 stop 99999
 end
