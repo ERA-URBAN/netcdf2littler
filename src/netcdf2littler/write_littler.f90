@@ -276,13 +276,25 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
     endif
     if (ANY(variable_mapping=="temperature" ) .AND. &
     ((temperature(idx) /= fill_value) .AND. (temperature(idx) /= -888888))) then
-      t = temperature(idx) + 273.15 ! convert to K
+      if (temperature(idx)>101) then
+        ! assuming temperature is in Kelvin already
+        t = temperature(idx)
+      else
+        ! assuming temperature is in Celcius
+        t = temperature(idx) + 273.15 ! convert to K
+      end if
     else
       t = dtemperature
     end if
     if (ANY(variable_mapping=="dew_point" ) .AND. &
       ((dew_point(idx) /= fill_value) .AND. (dew_point(idx) /= -888888))) then
-      td = (dew_point(idx)) + 273.15
+      if (dew_point(idx)>101) then
+        ! dew point temperature is already in Kelvin
+        td = dew_point(idx)
+      else
+        ! assuming dew point temperature is in Celcius
+        td = dew_point(idx) + 273.15
+      end if
     else
       td = ddew_point
     end if
