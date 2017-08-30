@@ -263,8 +263,18 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
     ! set input data, fall back to default values
     ! add: allow for multiple levels
     if (ANY(variable_mapping=="pressure" ) .AND. &
-      (pressure(idx) > 9000)) then
-      p = pressure(idx)
+      (pressure(idx) /= fill_value)) then
+      if ((pressure(idx) > 90000) .AND. (pressure(idx) < 110000)) then
+        p = pressure(idx)
+      else if ((pressure(idx) > 9000) .AND. (pressure(idx) < 11000)) then
+        p = 10 * pressure(idx)
+      else if ((pressure(idx) > 900) .AND. (pressure(idx) < 1100)) then
+        p = 100 * pressure(idx)
+      else if ((pressure(idx) > 90) .AND. (pressure(idx) < 110)) then
+        p = 1000 * pressure(idx)
+      else
+        p = dpressure
+      end if
     else
       p = dpressure
     end if
