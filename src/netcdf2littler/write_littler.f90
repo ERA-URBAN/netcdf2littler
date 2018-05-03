@@ -31,7 +31,6 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
   character *14  end_format
   logical bogus
   logical, intent(inout) :: append
-  call log_message('DEBUG', 'Entering subroutine write_obs')
 
   rpt_format =  ' ( 2f20.5 , 2a40 , ' &
                   // ' 2a40 , 1f20.5 , 5i10 , 3L10 , ' &
@@ -75,8 +74,6 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
       print *,'troubles writing a sounding'
       stop 19
 
-    call log_message('DEBUG', 'Leaving subroutine write_obs')
-
     end subroutine write_obs
 
 
@@ -95,8 +92,6 @@ subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
   integer, dimension(kx), intent(out) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
   integer, dimension(kx), intent(out) :: dv_qc, drh_qc, dthickness_qc
   integer :: k
-
-  call log_message('DEBUG', 'Entering subroutine get_default_littler')
 
   do k=1,kx
     dpressure(k) = -888888.
@@ -122,8 +117,6 @@ subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
     drh_qc(k) = 0
     dthickness_qc(k) = 0
   end do
-
-  call log_message('DEBUG', 'Leaving subroutine get_default_littler')
 
 end subroutine get_default_littler
 
@@ -157,8 +150,6 @@ subroutine time_to_littler_date(time, timeunits, time_littler, startindex, &
   character(len=99) :: char_a,char_b,char_c,char_d,char_e,char_f
   integer :: ii, ss
 
-  call log_message('DEBUG', 'Entering subroutine time_to_littler_date')
-
   charset = UT_ASCII
   sys = f_ut_read_xml("")
   sec0 = f_ut_parse(sys,"second",charset)
@@ -181,8 +172,7 @@ subroutine time_to_littler_date(time, timeunits, time_littler, startindex, &
   startindex = minloc(time_littler_int, dim=1, mask=(time_littler_int>=str2num(startdate)))
   endindex = maxloc(time_littler_int, dim=1, mask=(time_littler_int<=str2num(enddate)))
   ! calculate countnum
-  countnum = endindex - startindex + 1
-  call log_message('DEBUG', 'Leaving subroutine time_to_littler_date')
+  countnum = endindex - startindex
 end subroutine time_to_littler_date
 
 
@@ -192,8 +182,6 @@ character(len=14) function dateint(year,month,day,hour,minute,second)
   ! return character string
   character(len=99) :: char_a,char_b,char_c,char_d,char_e,char_f
   integer, intent(in) :: hour,minute,year,month,day, second
-
-  call log_message('DEBUG', 'Entering function dateint')
 
   ! convert integer to character strings, add leading 0 if needed
   write(char_a,fmt=*) year
@@ -207,7 +195,6 @@ character(len=14) function dateint(year,month,day,hour,minute,second)
     trim(adjustl(char_c))//trim(adjustl(char_d))// &
     trim(adjustl(char_e))//trim(adjustl(char_f))
 
-  call log_message('DEBUG', 'Leaving function dateint')
   return
 end function dateint
 
@@ -216,7 +203,6 @@ integer function str2num(str)
   ! convert string to integer
   character(len=8), intent(in) :: str
   read (str, '(g12.5)') str2num
-  call log_message('DEBUG', 'Leaving function str2num')
   return
 end function str2num
   
@@ -253,7 +239,6 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
   REAL,DIMENSION(:), intent(in) :: pressure, direction, thickness
   REAL,DIMENSION(:), intent(in) :: uwind, vwind, refpres
 
-  call log_message('DEBUG', 'Entering subroutine write_obs_littler')
   call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
   dspeed, ddirection, du, dv, drh, dthickness,dpsfc,drefpres,dpressure_qc, &
   dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, &
@@ -380,8 +365,6 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
         bogus , iseq_num , 2, outfile, append )
     endif
   end do
-
-  call log_message('DEBUG', 'Leaving subroutine write_obs_littler')
 
 end subroutine write_obs_littler
 
