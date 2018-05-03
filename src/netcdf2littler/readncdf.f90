@@ -37,7 +37,6 @@ subroutine readstepnc(fname,var_name,ff, fill_value, lon, lat,elevation, device,
   real *8, parameter :: ZERO = 0.0
   real,dimension(:),allocatable :: time
   character(len=14),dimension(:),allocatable :: time_littler
-  call log_message('DEBUG', 'Entering subroutine readstepnc')
   call check(nf90_open(fname,nf90_nowrite,nc_id))
   call check(nf90_inquire(nc_id,ndim,nvar))
   ! take the dimension names and lengths 
@@ -95,7 +94,6 @@ subroutine readstepnc(fname,var_name,ff, fill_value, lon, lat,elevation, device,
   status = nf90_get_att(nc_id,var_id,"_FillValue",fill_value)
   call check(nf90_close(nc_id))
   deallocate(var_dummy)
-  call log_message('DEBUG', 'Leaving subroutine readstepnc')
 end subroutine readstepnc
 
 
@@ -132,7 +130,6 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
   character(len=14),dimension(:),allocatable :: time_littler
   elevation = -888888
   allocate(var_dummy(countnum))
-  call log_message('DEBUG', 'Entering subroutine readstepnc_single')
   call check(nf90_open(fname,nf90_nowrite,nc_id))
   call check(nf90_inquire(nc_id,ndim,nvar))
   ! take the dimension names and lengths 
@@ -182,7 +179,7 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
     end do
   else
     status = nf90_get_var(nc_id,var_id,var_dummy, start=(/startindex/), &
-              count=(/countnum/))
+              count=(/countnum+1/))
     ! asking if there are the scale_factor and add_offset attributes
     status = nf90_get_att(nc_id,var_id,"scale_factor",sf)
     if (status == -43) sf=1.0
@@ -196,7 +193,6 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
 
   ! close netcdf file
   call check(nf90_close(nc_id))
-  call log_message('DEBUG', 'Leaving subroutine readstepnc_single')
   deallocate(var_dummy)
 end subroutine readstepnc_single
 
@@ -217,8 +213,6 @@ subroutine readtimedim(fname, time, timeunits)
   integer :: nc_id,ndim,nvar, dlength, var_id, &
              ii,lo,la,le,ld,lh, device
   character(len=15) :: dname, varname
-
-  call log_message('DEBUG', 'Entering subroutine readtimedim')
 
   call check(nf90_open(fname,nf90_nowrite,nc_id))
   call check(nf90_inquire(nc_id,ndim,nvar))
@@ -255,7 +249,6 @@ subroutine readtimedim(fname, time, timeunits)
         call check(nf90_get_att(nc_id, var_id, 'units', timeunits))
     end select
   end do
-  call log_message('DEBUG', 'Leaving subroutine readtimedim')
 end subroutine readtimedim
 
 
@@ -280,9 +273,8 @@ subroutine read_variables(lat, lon, elevation, humidity, height, speed, temperat
   character(len=*), intent(in) :: filename
   real, intent(out) :: fill_value
   integer, intent(in) :: dimensions
-  call log_message('DEBUG', 'Entering subroutine read_variables')
   ! Reading variables
-  call log_message('INFO', 'Reading variable: '//variable_name(idx))
+  call log_message('DEBUG', 'Reading variable: '//variable_name(idx))
   select case (dimensions)
   case (1)  ! dimensions==1
     select case (trim(variable_mapping(idx)))
@@ -353,7 +345,6 @@ subroutine read_variables(lat, lon, elevation, humidity, height, speed, temperat
   case DEFAULT
     STOP 'Dimensions should be either 1 or 2'
   end select
-  call log_message('DEBUG', 'Leaving subroutine read_variables')
 end subroutine read_variables
 
 end module readncdf
