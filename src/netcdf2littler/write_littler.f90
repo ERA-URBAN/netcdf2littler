@@ -170,7 +170,7 @@ subroutine time_to_littler_date(time, timeunits, time_littler, startindex, &
   end do
   ! calculate startindex and endindex
   startindex = minloc(time_littler_int, dim=1, mask=(time_littler_int>=str2num(startdate)))
-  endindex = maxloc(time_littler_int, dim=1, mask=(time_littler_int<=str2num(enddate)))
+  endindex = minloc(time_littler_int, dim=1, mask=(time_littler_int>=str2num(enddate)))
   ! calculate countnum
   countnum = endindex - startindex
 end subroutine time_to_littler_date
