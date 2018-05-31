@@ -75,8 +75,8 @@ logical::fileExist
 character(99) :: infile, name
 
 ! get filename, variable_names and variable_mappings from namelist
-namelist /group_name/ filename, variable_name, variable_mapping, devices, &
-    outfile, dimensions, startdate, enddate
+namelist /netcdf2littler/ filename, variable_name, variable_mapping, devices, &
+    outfile, startdate, enddate
 
 ! define logging file
 call define_logfile('convert_littler.log')
@@ -107,17 +107,17 @@ if(narg>0) then
   end do
 else
   ! set a default namelist name
-  infile = './input.namelist'
+  infile = './netcdf2littler.namelist'
   inquire(file=infile,exist=fileExist)!check if it exist
   if(.not.fileExist)then
     write(*,*)'file ',infile,' not found'
     stop
   endif
 endif
-
+print*, infile
 ! read the namelist (either cli supplied or default
-open(10,file=infile)
-read(10,group_name)
+open(10, file=infile)
+read(10, netcdf2littler)
 close(10)
 
 call log_message('INFO', 'Parsing namelist finished.')
@@ -131,12 +131,16 @@ end do
 call log_message('INFO', concat_str_int('Number of variables found: ', &
                  number_of_variables))
 
-! check if dimensions and namelist are correct in namelist
-if (.not. ((dimensions==1 .AND. devices==1) .or. &
-  (dimensions==2 .AND. devices>=1))) then
+! check if devices are specified correct in namelist
+! and set dimensions
+if (devices==1) then
+  dimensions = 1
+else if (devices>1) then
+  dimensions = 2
+else
   call log_message('ERROR', 'Error in namelist specification of &
-    & dimensions and devices.')
-end if
+    & devices.')
+end if  
 
 inquire(file=filename, exist=fileExist) !check if the netcdf exists
 if(.not.fileExist) then
