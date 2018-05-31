@@ -1,7 +1,7 @@
 program netcdftolittler
 
 !     ... pressure is in Pa, height in m, temperature and dew point are in
-!         K, speed is in m/s, and direction is in degrees
+!         K, windspeed is in m/s, and direction is in degrees
 
 !     ... sea level pressure is in Pa, terrain elevation is in m, latitude
 !         is in degrees N, longitude is in degrees E
@@ -43,18 +43,18 @@ integer,dimension(kx) :: p_qc,z_qc,t_qc,td_qc,spd_qc
 integer, dimension(kx) :: dir_qc,u_qc,v_qc,rh_qc,thick_qc
 ! iseq_num: sequential number -> domain number
 real, dimension(kx) :: dpressure, dheight, dtemperature, ddew_point
-real, dimension(kx) ::  dspeed, ddirection, du, dv, drh, dthickness
+real, dimension(kx) ::  dwindspeed, ddirection, du, dv, drh, dthickness
 integer, dimension(kx) :: dpressure_qc, dheight_qc, dtemperature_qc
-integer, dimension(kx) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
+integer, dimension(kx) ::  ddew_point_qc, dwindspeed_qc, ddirection_qc, du_qc
 integer, dimension(kx) :: dv_qc, drh_qc, dthickness_qc
 character(len=14) :: timechar
 character *20 date_char
 character *40 string1, string2 , string3 , string4
 integer :: timeLength, device
-REAL,DIMENSION(:), ALLOCATABLE :: humidity, height, speed
+REAL,DIMENSION(:), ALLOCATABLE :: humidity, height, windspeed
 REAL,DIMENSION(:), ALLOCATABLE :: temperature, dew_point
 REAL,DIMENSION(:), ALLOCATABLE :: pressure, direction, thickness
-REAL,DIMENSION(:), ALLOCATABLE :: uwind, vwind, refpres
+REAL,DIMENSION(:), ALLOCATABLE :: uwind, vwind, mslp
 character(len=14), dimension(:), allocatable :: time_littler
 real,dimension(:), allocatable    :: time
 character(len=100) :: timeunits
@@ -177,14 +177,14 @@ do device=1,devices
   allocate(humidity(countnum))
   if (allocated(height)) deallocate(height)
   allocate(height(countnum))
-  if (allocated(speed)) deallocate(speed)
-  allocate(speed(countnum))
+  if (allocated(windspeed)) deallocate(windspeed)
+  allocate(windspeed(countnum))
   if (allocated(dew_point)) deallocate(dew_point)
   allocate(dew_point(countnum))
   if (allocated(pressure)) deallocate(pressure)
   allocate(pressure(countnum))
-  if (allocated(refpres)) deallocate(refpres)
-  allocate(refpres(countnum))
+  if (allocated(mslp)) deallocate(mslp)
+  allocate(mslp(countnum))
   if (allocated(direction)) deallocate(direction)
   allocate(direction(countnum))
   if (allocated(thickness)) deallocate(thickness)
@@ -195,13 +195,13 @@ do device=1,devices
   allocate(vwind(countnum))
   do idx=1,number_of_variables
     ! read specified variables from netCDF file
-    call read_variables(lat, lon, elevation, humidity, height, speed, temperature, dew_point, &
-      pressure, refpres, direction, thickness, uwind, vwind, variable_name, &
+    call read_variables(lat, lon, elevation, humidity, height, windspeed, temperature, dew_point, &
+      pressure, mslp, direction, thickness, uwind, vwind, variable_name, &
       variable_mapping, filename, fill_value, idx, device, dimensions, startindex, countnum)
     end do
   ! write obs to file in LITTLE_R format
-  call write_obs_littler(pressure,height,temperature,dew_point,speed, &
-  direction,uwind,vwind,humidity,thickness,refpres, p_qc,z_qc,t_qc,td_qc,spd_qc, &
+  call write_obs_littler(pressure,height,temperature,dew_point,windspeed, &
+  direction,uwind,vwind,humidity,thickness,mslp, p_qc,z_qc,t_qc,td_qc,spd_qc, &
   dir_qc,u_qc,v_qc,rh_qc,thick_qc,elevation,lat,lon,variable_mapping, &
   kx, bogus, iseq_num, time_littler(startindex:startindex+countnum-1), fill_value, outfile, append )
 end do

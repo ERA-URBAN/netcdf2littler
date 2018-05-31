@@ -77,18 +77,18 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
 
 
 subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
-  dspeed, ddirection, du, dv, drh, dthickness, dpsfc, drefpres, dpressure_qc, &
-  dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, ddirection_qc, du_qc, &
+  dwindspeed, ddirection, du, dv, drh, dthickness, dpsfc, dmslp, dpressure_qc, &
+  dheight_qc, dtemperature_qc, ddew_point_qc, dwindspeed_qc, ddirection_qc, du_qc, &
   dv_qc, drh_qc, dthickness_qc, kx)
   ! set default values for LITTLE_R format
   ! -888888.:  measurement not available
   ! _qc = 0: no quality control
   integer, intent(in) :: kx
   real, dimension(kx), intent(out) :: dpressure, dheight, dtemperature, ddew_point
-  real, dimension(kx), intent(out) :: dspeed, ddirection, du, dv, drh, dthickness
-  real, dimension(kx), intent(out) :: dpsfc, drefpres
+  real, dimension(kx), intent(out) :: dwindspeed, ddirection, du, dv, drh, dthickness
+  real, dimension(kx), intent(out) :: dpsfc, dmslp
   integer, dimension(kx), intent(out) :: dpressure_qc, dheight_qc, dtemperature_qc
-  integer, dimension(kx), intent(out) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
+  integer, dimension(kx), intent(out) ::  ddew_point_qc, dwindspeed_qc, ddirection_qc, du_qc
   integer, dimension(kx), intent(out) :: dv_qc, drh_qc, dthickness_qc
   integer :: k
 
@@ -97,7 +97,7 @@ subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
     dheight(k) = -888888.
     dtemperature(k) = -888888.
     ddew_point(k) = -888888.
-    dspeed(k) = -888888.
+    dwindspeed(k) = -888888.
     ddirection(k) = -888888.
     du(k) = -888888.
     dv(k) = -888888.
@@ -105,11 +105,11 @@ subroutine get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
     dthickness(k) = -888888.
     dpressure_qc(k) = 0
     dpsfc(k) = -888888.
-    drefpres(k) = -888888.
+    dmslp(k) = -888888.
     dheight_qc(k) = 0
     dtemperature_qc(k) = 0
     ddew_point_qc(k) = 0
-    dspeed_qc(k) = 0
+    dwindspeed_qc(k) = 0
     ddirection_qc(k) = 0
     du_qc(k) = 0
     dv_qc(k) = 0
@@ -208,8 +208,8 @@ integer(kind=8) function str2num(str)
 end function str2num
   
   
-subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
-  direction,uwind,vwind,humidity,thickness,refpres, &
+subroutine write_obs_littler(pressure,height,temperature,dew_point,windspeed, &
+  direction,uwind,vwind,humidity,thickness,mslp, &
   p_qc,z_qc,t_qc,td_qc,spd_qc,dir_qc,u_qc,v_qc,rh_qc,thick_qc, &
   ter , lat , lon , variable_mapping, kx, bogus, iseq_num, time_littler, &
   fill_value, outfile, append )
@@ -222,10 +222,10 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
   integer,dimension(kx) :: p_qc,z_qc,t_qc,td_qc,spd_qc
   real, intent(in) :: ter
   integer, dimension(kx) :: dir_qc,u_qc,v_qc,rh_qc,thick_qc
-  real, dimension(kx) :: dpressure, dheight, dtemperature, ddew_point, drefpres
-  real, dimension(kx) ::  dspeed, ddirection, du, dv, drh, dthickness, dpsfc
+  real, dimension(kx) :: dpressure, dheight, dtemperature, ddew_point, dmslp
+  real, dimension(kx) ::  dwindspeed, ddirection, du, dv, drh, dthickness, dpsfc
   integer, dimension(kx) :: dpressure_qc, dheight_qc, dtemperature_qc
-  integer, dimension(kx) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
+  integer, dimension(kx) ::  ddew_point_qc, dwindspeed_qc, ddirection_qc, du_qc
   integer, dimension(kx) :: dv_qc, drh_qc, dthickness_qc
   REAL, intent(in) :: lon, lat
   character(len=30), dimension(:), intent(in):: variable_mapping
@@ -235,14 +235,14 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
   integer :: idx
   integer, intent(in) :: iseq_num
   character(len=14), dimension(:), intent(in) :: time_littler
-  REAL,DIMENSION(:), intent(in) :: humidity, height, speed
+  REAL,DIMENSION(:), intent(in) :: humidity, height, windspeed
   REAL,DIMENSION(:), intent(in) :: temperature, dew_point
   REAL,DIMENSION(:), intent(in) :: pressure, direction, thickness
-  REAL,DIMENSION(:), intent(in) :: uwind, vwind, refpres
+  REAL,DIMENSION(:), intent(in) :: uwind, vwind, mslp
 
   call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
-  dspeed, ddirection, du, dv, drh, dthickness,dpsfc,drefpres,dpressure_qc, &
-  dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, &
+  dwindspeed, ddirection, du, dv, drh, dthickness,dpsfc,dmslp,dpressure_qc, &
+  dheight_qc, dtemperature_qc, ddew_point_qc, dwindspeed_qc, &
   ddirection_qc, du_qc, dv_qc, drh_qc, dthickness_qc, kx)
   ! put this in a subroutine or function
   do idx=1,size(time_littler)
@@ -294,11 +294,11 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
     else
       td = ddew_point
     end if
-    if (ANY(variable_mapping=="speed" ) .AND. &
+    if (ANY(variable_mapping=="windspeed" ) .AND. &
       (spd(idx) /= fill_value)) then
-      spd = speed(idx)
+      spd = windspeed(idx)
     else
-      spd = dspeed
+      spd = dwindspeed
     end if
     if (ANY(variable_mapping=="direction") .AND. & 
       (direction(idx) /= fill_value)) then
@@ -330,17 +330,17 @@ subroutine write_obs_littler(pressure,height,temperature,dew_point,speed, &
     else
       thick = dthickness
     end if
-    if (ANY(variable_mapping=="refpres" ) .AND. &
-      ((refpres(idx) /= fill_value) .AND. refpres(idx) > 9000)) then
-      slp = refpres(idx)
+    if (ANY(variable_mapping=="mslp" ) .AND. &
+      ((mslp(idx) /= fill_value) .AND. mslp(idx) > 9000)) then
+      slp = mslp(idx)
     else
-      slp = drefpres
+      slp = dmslp
     end if 
     p_qc = dpressure_qc
     z_qc = dheight_qc
     t_qc = dtemperature_qc
     td_qc = ddew_point_qc
-    spd_qc = dspeed_qc
+    spd_qc = dwindspeed_qc
     dir_qc = ddirection_qc
     u_qc = du_qc
     v_qc = dv_qc
