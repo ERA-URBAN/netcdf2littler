@@ -67,6 +67,9 @@ subroutine report_tests(tests)
   write(unit=stdout, fmt='(A,I3,A)')'Ran a total of ', size(tests),' tests.'
   write(unit=stdout, fmt='(I3,A,I3,A)')nsuccess,' tests PASSED, ',nfailure,' tests FAILED.'
   write(unit=stdout, fmt='(A)')
+  if (nfailure /= 0) then
+    call exit(1)
+  end if
 end subroutine report_tests
 
 
@@ -322,7 +325,6 @@ subroutine test_read_variables(tests, n)
   enddate = '20140526'  
   call time_to_littler_date(time, timeunits, time_littler, startindex, &
                             countnum, startdate, enddate)
-  print*, time_littler(3)
   ! define output file
   outfile = 'test.out'
   ! write obs to file in LITTLE_R format

@@ -31,7 +31,6 @@ subroutine write_obs(p,z,t,td,spd,dir,u,v,rh,thick, &
   character *14  end_format
   logical bogus
   logical, intent(inout) :: append
-
   rpt_format =  ' ( 2f20.5 , 2a40 , ' &
                   // ' 2a40 , 1f20.5 , 5i10 , 3L10 , ' &
                   // ' 2i10 , a20 ,  13( f13.5 , i7 ) ) '
@@ -136,7 +135,7 @@ subroutine time_to_littler_date(time, timeunits, time_littler, startindex, &
   character(len=100), intent(in) :: timeunits
   character(len=8), intent(in) :: startdate, enddate
   character(len=14), dimension(:), intent(out) :: time_littler
-  integer, dimension(:), allocatable :: time_littler_int
+  integer(kind=8), dimension(:), allocatable :: time_littler_int
   integer, intent(out) :: startindex, countnum
   integer :: endindex
   real(c_double) :: resolution
@@ -169,10 +168,11 @@ subroutine time_to_littler_date(time, timeunits, time_littler, startindex, &
     time_littler_int(ii) = str2num(time_littler(ii))
   end do
   ! calculate startindex and endindex
-  startindex = minloc(time_littler_int, dim=1, mask=(time_littler_int>=str2num(startdate)))
-  endindex = minloc(time_littler_int, dim=1, mask=(time_littler_int>=str2num(enddate)))
+  startindex = minloc(time_littler_int, dim=1, mask=(time_littler_int>=str2num(startdate)*1e6))
+  !endindex = minloc(time_littler_int, dim=1, mask=(time_littler_int>=str2num(enddate)))
+  endindex = maxloc(time_littler_int, dim=1, mask=(time_littler_int>=str2num(enddate)*1e6))
   ! calculate countnum
-  countnum = endindex - startindex
+  countnum = endindex - startindex + 1
 end subroutine time_to_littler_date
 
 
@@ -199,10 +199,11 @@ character(len=14) function dateint(year,month,day,hour,minute,second)
 end function dateint
 
 
-integer function str2num(str)
+integer(kind=8) function str2num(str)
   ! convert string to integer
-  character(len=8), intent(in) :: str
-  read (str, '(g12.5)') str2num
+  character(len=*), intent(in) :: str
+  !read (str, '(g12.5)') str2num
+  read(str, *)  str2num
   return
 end function str2num
   
