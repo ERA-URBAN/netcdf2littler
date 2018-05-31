@@ -75,7 +75,7 @@ subroutine main
   logical,dimension(:),allocatable :: tests  ! logical array with test results
   INTEGER :: ntests  ! total number of tests
   INTEGER :: n = 1  ! test counter
-  ntests = 46  ! modify if adding new tests
+  ntests = 49  ! modify if adding new tests
   call define_logfile('write_littler_tests.log')
   call initialize_tests(tests,ntests)
   call test_dateint(tests, n)
@@ -84,6 +84,7 @@ subroutine main
   call test_readstepnc_single(tests, n)
   call test_readstepnc(tests, n)
   call test_read_variables(tests, n)
+  call test_concat(tests, n)
   n = n-1
   call report_tests(tests)
   ! remove this statement later, used for keeping track of ntests
@@ -265,6 +266,7 @@ subroutine test_read_variables(tests, n)
   integer, dimension(kx) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
   integer, dimension(kx) :: dv_qc, drh_qc, dthickness_qc
   character(len=14), dimension(:), allocatable :: time_littler
+  character(len=8):: startdate, enddate
   integer :: timeLength
   character(len=100) :: timeunits
   logical bogus, append
@@ -311,12 +313,19 @@ subroutine test_read_variables(tests, n)
   dspeed, ddirection, du, dv, drh, dthickness, dpsfc, drefpres, dpressure_qc, &
   dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, ddirection_qc, du_qc, &
   dv_qc, drh_qc, dthickness_qc, kx)
-  ! write obs to file in LITTLE_R format
+  ! read time dimensions
   call readtimedim(filename, time, timeunits)
   timeLength = size(time)
+  ! convert to LITTLE_R time format
   allocate(time_littler(timeLength))
+  startdate = '20140525'
+  enddate = '20140526'  
+  call time_to_littler_date(time, timeunits, time_littler, startindex, &
+                            countnum, startdate, enddate)
+  print*, time_littler(3)
   ! define output file
   outfile = 'test.out'
+  ! write obs to file in LITTLE_R format
   call write_obs_littler(pressure,height,temperature,dew_point,speed, &
                          direction,uwind,vwind,humidity,thickness,refpres, p_qc,z_qc,t_qc,td_qc,spd_qc, &
                          dir_qc,u_qc,v_qc,rh_qc,thick_qc,elevation,lat,lon,variable_mapping, &
@@ -334,10 +343,23 @@ subroutine test_read_variables(tests, n)
   n=n+1
   tests(n) = assert((temperature(1)-temperature(10))==1.50000000, 'read_variables: array value difference')
   n=n+1
+  tests(n) = assert(time_littler(3)=='20140525214504', 'time conversion to LITTLE_R format')
+  n=n+1
   ! check if LITTLE_R file is created
   inquire(FILE=outfile, EXIST=file_exists)
   tests(n) = assert(file_exists .eqv. .true., 'creation of LITTLE_R output file')
   n=n+1
 end subroutine test_read_variables
+
+subroutine test_concat(tests, n)
+  ! unit test for readstepnc subroutine
+  integer, intent(inout) :: n
+  logical, dimension(*), intent(inout) :: tests
+  ! run tests
+  tests(n) = assert(concat_str_int('Number ', 1) == 'Number 1', 'concat str and int')
+  n=n+1
+  tests(n) = assert(concat_str_real('Number ', 1.0) == 'Number 1.00000000', 'concat str and real')
+  n=n+1
+end subroutine test_concat
 
 end module convert_littler_tests
