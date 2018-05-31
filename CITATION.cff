@@ -1,0 +1,22 @@
+# YAML 1.2
+--- 
+authors: 
+  - 
+    affiliation: "Netherlands eScience Center"
+    family-names: Haren
+    given-names: Ronald
+    name-particle: van
+cff-version: "1.0.3"
+commit: 
+date-released: 2018-05-31
+doi:
+keywords: 
+  - "WRF"
+  - "WRFDA"
+  - "LITTLE_R"
+  - "netCDF"
+license: Apache-2.0
+message: "If you use this software, please cite it using these metadata."
+repository-code: "https://github.com/ERA-URBAN/netcdf2littler"
+title: netcdf2littler
+version: "1.0.0"

@@ -1,0 +1,19 @@
+{
+    "description": "Convertor for netCDF data to LITTLE_R format",
+    "license": "Apache-2.0",
+    "title": "netcdf2littler",
+    "upload_type": "software",
+    "creators": [
+        {
+            "affiliation": "Netherlands eScience Center",
+            "name": "van Haren, Ronald"
+        }
+    ],
+    "access_right": "open",
+    "keywords": [
+        "WRF",
+        "WRFDA",
+        "LITTLE_R",
+        "netCDF"
+    ]
+}
