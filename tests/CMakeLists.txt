@@ -9,7 +9,7 @@ SET(NETCDF2LITTLERTESTS_src
                        ${SRCNETCDF2LITTLER}/logging.f90
                        ${SRCNETCDF2LITTLER}/readncdf.f90
                        ${SRCNETCDF2LITTLER}/write_littler.f90
-                       ${SRCNETCDF2LITTLERTESTS}/convert_littler_tests.f90
+                       ${SRCNETCDF2LITTLERTESTS}/netcdf2littler_tests.f90
                        ${SRCNETCDF2LITTLERTESTS}/run_tests.f90
 )
 

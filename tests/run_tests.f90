@@ -1,6 +1,6 @@
 program run_tests
 
-use convert_littler_tests
+use netcdf2littler_tests
 
 implicit none
 

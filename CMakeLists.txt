@@ -61,7 +61,7 @@ INCLUDE(${CMAKE_MODULE_PATH}/FindUdunits2.cmake)
 ############################################################
 
 # Define the executable name
-SET(NETCDF2LITTLEREXE convert-littler)
+SET(NETCDF2LITTLEREXE netcdf2littler)
 
 # Define the library name
 SET(FUDUNITS2LIB f_udunits_2)
@@ -82,7 +82,7 @@ ADD_SUBDIRECTORY(${SRCNETCDF2LITTLER})
 # only build tests if -DBUILD_TESTS=True
 if (ENABLE_COVERAGE)
   CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
-  SET(NETCDF2LITTLERTESTSEXE convert-littler-tests)
+  SET(NETCDF2LITTLERTESTSEXE netcdf2littler-tests)
   SET(SRCNETCDF2LITTLERTESTS ${CMAKE_SOURCE_DIR}/tests)
   # enable code coverage
   find_package(codecov)

@@ -4,7 +4,7 @@
 
 # Add the source files
 SET(NETCDF2LITTLER_src ${SRCNETCDF2LITTLER}/check_status.f90
-                       ${SRCNETCDF2LITTLER}/convert_littler.f90
+                       ${SRCNETCDF2LITTLER}/netcdf2littler.f90
                        ${SRCNETCDF2LITTLER}/logging.f90
                        ${SRCNETCDF2LITTLER}/readncdf.f90
                        ${SRCNETCDF2LITTLER}/write_littler.f90

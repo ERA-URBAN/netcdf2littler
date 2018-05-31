@@ -1,4 +1,4 @@
-module convert_littler_tests
+module netcdf2littler_tests
 ! minimal unit testing framework for write_littler
 
 use readncdf
@@ -364,4 +364,4 @@ subroutine test_concat(tests, n)
   n=n+1
 end subroutine test_concat
 
-end module convert_littler_tests
+end module netcdf2littler_tests
