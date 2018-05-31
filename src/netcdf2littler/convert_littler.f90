@@ -50,7 +50,7 @@ integer, dimension(kx) :: dv_qc, drh_qc, dthickness_qc
 character(len=14) :: timechar
 character *20 date_char
 character *40 string1, string2 , string3 , string4
-INTEGER :: timeLength, device
+integer :: timeLength, device
 REAL,DIMENSION(:), ALLOCATABLE :: humidity, height, speed
 REAL,DIMENSION(:), ALLOCATABLE :: temperature, dew_point
 REAL,DIMENSION(:), ALLOCATABLE :: pressure, direction, thickness

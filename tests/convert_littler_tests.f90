@@ -75,13 +75,16 @@ subroutine main
   logical,dimension(:),allocatable :: tests  ! logical array with test results
   INTEGER :: ntests  ! total number of tests
   INTEGER :: n = 1  ! test counter
-  ntests = 34  ! modify if adding new tests
+  ntests = 46  ! modify if adding new tests
   call define_logfile('write_littler_tests.log')
   call initialize_tests(tests,ntests)
   call test_dateint(tests, n)
   call test_get_default_littler(tests, n)
   call test_readtimedim(tests, n)
   call test_readstepnc_single(tests, n)
+  call test_readstepnc(tests, n)
+  call test_read_variables(tests, n)
+  n = n-1
   call report_tests(tests)
   ! remove this statement later, used for keeping track of ntests
   if ( n/=ntests ) then
@@ -198,18 +201,143 @@ subroutine test_readstepnc_single(tests, n)
   real :: lon, lat, elevation, fill_value
   integer :: startindex = 1
   integer :: countnum = 10
-  call readstepnc_single('../test_data/test_1d.nc','temperature', ff, &
+  call readstepnc_single('../test_data/test_1d.nc', 'temperature', ff, &
     fill_value, lon, lat, elevation, startindex, countnum)
   tests(n) = assert(lon==4.88883305, 'readstepnc_single: longitude')
   n=n+1
   tests(n) = assert(lat==52.3687325, 'readstepnc_single: latitude')
   n=n+1
-  tests(n) = assert(elevation==1.05, 'readstepnc_single: elevation')
+  tests(n) = assert(elevation==1.8, 'readstepnc_single: elevation')
   n=n+1
   tests(n) = assert(ff(3)==20.5000000, 'readstepnc_single: array value')
   n=n+1
   tests(n) = assert((ff(1)-ff(10))==1.50000000, 'readstepnc_single: array value difference')
+  n=n+1
 end subroutine test_readstepnc_single
 
+subroutine test_readstepnc(tests, n)
+  ! unit test for readstepnc subroutine
+  integer, intent(inout) :: n
+  logical, dimension(*), intent(inout) :: tests
+  real, dimension(10) :: ff
+  real :: lon, lat, elevation, fill_value
+  integer :: startindex = 1
+  integer :: countnum = 10
+  integer :: device = 2
+  call readstepnc('../test_data/test_2d.nc','temperature', ff, &
+    fill_value, lon, lat, elevation, device, startindex, countnum)
+  tests(n) = assert(lon==4.88883305, 'readstepnc: longitude')
+  n=n+1
+  tests(n) = assert(lat==52.3687325, 'readstepnc: latitude')
+  n=n+1
+  tests(n) = assert(elevation==24.2, 'readstepnc: elevation')
+  n=n+1
+  tests(n) = assert(ff(3)==20.5000000, 'readstepnc: array value')
+  n=n+1
+  tests(n) = assert((ff(1)-ff(10))==1.50000000, 'readstepnc: array value difference')
+  n=n+1
+end subroutine test_readstepnc
+
+subroutine test_read_variables(tests, n)
+  ! unit test for readstepnc subroutine
+  integer, intent(inout) :: n
+  logical, dimension(*), intent(inout) :: tests
+  character(len=99):: filename, outfile
+  real :: lon, lat, elevation, fill_value
+  integer :: startindex = 1
+  integer :: countnum = 10
+  integer :: device = 1
+  integer :: dimensions = 1
+  integer :: idx = 1
+  real, dimension(:), allocatable :: humidity, height, speed
+  real, dimension(:), allocatable :: temperature, dew_point
+  real, dimension(:), allocatable :: pressure, direction, thickness
+  real,dimension(:), allocatable :: uwind, vwind, refpres
+  character(len=30), dimension(2):: variable_name
+  character(len=30), dimension(2):: variable_mapping
+  integer, parameter :: kx=1
+  integer,dimension(kx) :: p_qc,z_qc,t_qc,td_qc,spd_qc
+  integer, dimension(kx) :: dir_qc,u_qc,v_qc,rh_qc,thick_qc
+  real, dimension(kx) :: dpressure, dheight, dtemperature, ddew_point
+  real, dimension(kx) ::  dspeed, ddirection, du, dv, drh, dthickness
+  real, dimension(kx) ::  dpsfc, drefpres
+  integer, dimension(kx) :: dpressure_qc, dheight_qc, dtemperature_qc
+  integer, dimension(kx) ::  ddew_point_qc, dspeed_qc, ddirection_qc, du_qc
+  integer, dimension(kx) :: dv_qc, drh_qc, dthickness_qc
+  character(len=14), dimension(:), allocatable :: time_littler
+  integer :: timeLength
+  character(len=100) :: timeunits
+  logical bogus, append
+  data bogus /.false./
+  integer:: iseq_num = 1
+  real,dimension(:), allocatable    :: time
+  logical :: file_exists
+  append = .false.
+  variable_name(1) = 'temperature'
+  variable_name(2) = 'humidity'
+  variable_mapping(1) = 'temperature'
+  variable_mapping(2) = 'humidity'
+  if (allocated(temperature)) deallocate(temperature)
+  allocate(temperature(countnum))
+  if (allocated(humidity)) deallocate(humidity)
+  allocate(humidity(countnum))
+  if (allocated(height)) deallocate(height)
+  allocate(height(countnum))
+  if (allocated(speed)) deallocate(speed)
+  allocate(speed(countnum))
+  if (allocated(dew_point)) deallocate(dew_point)
+  allocate(dew_point(countnum))
+  if (allocated(pressure)) deallocate(pressure)
+  allocate(pressure(countnum))
+  if (allocated(refpres)) deallocate(refpres)
+  allocate(refpres(countnum))
+  if (allocated(direction)) deallocate(direction)
+  allocate(direction(countnum))
+  if (allocated(thickness)) deallocate(thickness)
+  allocate(thickness(countnum))
+  if (allocated(uwind)) deallocate(uwind)
+  allocate(uwind(countnum))
+  if (allocated(vwind)) deallocate(vwind)
+  allocate(vwind(countnum))
+  ! read both temperature and humidity
+  filename = '../test_data/test_1d.nc'
+  do idx=1,2
+      call read_variables(lat, lon, elevation, humidity, height, speed, temperature, dew_point, &
+                          pressure, refpres, direction, thickness, uwind, vwind, variable_name, &
+                          variable_mapping, filename, fill_value, idx, device, dimensions, startindex, countnum)
+  end do
+  ! get default values
+  call get_default_littler(dpressure, dheight, dtemperature, ddew_point, &
+  dspeed, ddirection, du, dv, drh, dthickness, dpsfc, drefpres, dpressure_qc, &
+  dheight_qc, dtemperature_qc, ddew_point_qc, dspeed_qc, ddirection_qc, du_qc, &
+  dv_qc, drh_qc, dthickness_qc, kx)
+  ! write obs to file in LITTLE_R format
+  call readtimedim(filename, time, timeunits)
+  timeLength = size(time)
+  allocate(time_littler(timeLength))
+  ! define output file
+  outfile = 'test.out'
+  call write_obs_littler(pressure,height,temperature,dew_point,speed, &
+                         direction,uwind,vwind,humidity,thickness,refpres, p_qc,z_qc,t_qc,td_qc,spd_qc, &
+                         dir_qc,u_qc,v_qc,rh_qc,thick_qc,elevation,lat,lon,variable_mapping, &
+                         kx, bogus, iseq_num, time_littler(startindex:startindex+countnum-1), fill_value, outfile, append)
+  ! run tests
+  tests(n) = assert(lon==4.88883305, 'read_variables: longitude')
+  n=n+1
+  tests(n) = assert(lat==52.3687325, 'read_variables: latitude')
+  n=n+1
+  tests(n) = assert(elevation==1.8, 'read_variables: elevation')
+  n=n+1
+  tests(n) = assert(temperature(3)==20.5000000, 'read_variables: array value')
+  n=n+1
+  tests(n) = assert(humidity(2)==0.3729959, 'read_variables: array value')
+  n=n+1
+  tests(n) = assert((temperature(1)-temperature(10))==1.50000000, 'read_variables: array value difference')
+  n=n+1
+  ! check if LITTLE_R file is created
+  inquire(FILE=outfile, EXIST=file_exists)
+  tests(n) = assert(file_exists .eqv. .true., 'creation of LITTLE_R output file')
+  n=n+1
+end subroutine test_read_variables
 
 end module convert_littler_tests

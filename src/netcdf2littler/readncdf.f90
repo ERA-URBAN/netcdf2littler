@@ -179,7 +179,7 @@ subroutine readstepnc_single(fname,var_name,ff, fill_value, lon, lat, elevation,
     end do
   else
     status = nf90_get_var(nc_id,var_id,var_dummy, start=(/startindex/), &
-              count=(/countnum+1/))
+              count=(/countnum/))
     ! asking if there are the scale_factor and add_offset attributes
     status = nf90_get_att(nc_id,var_id,"scale_factor",sf)
     if (status == -43) sf=1.0
