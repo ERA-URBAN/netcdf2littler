@@ -1,5 +1,6 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Build Status](https://travis-ci.org/ERA-URBAN/netcdf2littler.svg?branch=master)](https://travis-ci.org/ERA-URBAN/netcdf2littler) [![codecov](https://codecov.io/gh/ERA-URBAN/netcdf2littler/branch/master/graph/badge.svg)](https://codecov.io/gh/ERA-URBAN/netcdf2littler)
+[![DOI](https://zenodo.org/badge/51359212.svg)](https://zenodo.org/badge/latestdoi/51359212)
 
 # NetCDF2LittleR
 
